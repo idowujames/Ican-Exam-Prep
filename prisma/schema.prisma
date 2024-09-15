@@ -1,0 +1,124 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id             String           @id @default(uuid())
+  email          String           @unique
+  password       String
+  name           String
+  role           Role             @default(STUDENT)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  practiceExams  PracticeExam[]
+  mockExams      MockExam[]
+  studySessions  StudySession[]
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+}
+
+model Exam {
+  id             String           @id @default(uuid())
+  name           String
+  subject        Subject          @relation(fields: [subjectId], references: [id])
+  subjectId      String
+  diet           String
+  questions      Question[]
+  practiceExams  PracticeExam[]
+  mockExams      MockExam[]
+}
+
+model Subject {
+  id             String           @id @default(uuid())
+  name           String           @unique
+  exams          Exam[]
+  questions      Question[]
+}
+
+model Question {
+  id             String           @id @default(uuid())
+  exam           Exam             @relation(fields: [examId], references: [id])
+  examId         String
+  subject        Subject          @relation(fields: [subjectId], references: [id])
+  subjectId      String
+  type           QuestionType
+  content        String
+  options        Json?            // For MCQs, stored as JSON
+  correctAnswer  String
+  explanation    String
+  simplifiedExplanation String
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  practiceExamQuestions PracticeExamQuestion[]
+  mockExamQuestions MockExamQuestion[]
+}
+
+enum QuestionType {
+  MCQ
+  LONG_FORM
+}
+
+model PracticeExam {
+  id             String           @id @default(uuid())
+  user           User             @relation(fields: [userId], references: [id])
+  userId         String
+  exam           Exam             @relation(fields: [examId], references: [id])
+  examId         String
+  startedAt      DateTime         @default(now())
+  completedAt    DateTime?
+  score          Int?
+  questions      PracticeExamQuestion[]
+}
+
+model PracticeExamQuestion {
+  id             String           @id @default(uuid())
+  practiceExam   PracticeExam     @relation(fields: [practiceExamId], references: [id])
+  practiceExamId String
+  question       Question         @relation(fields: [questionId], references: [id])
+  questionId     String
+  userAnswer     String?
+  isCorrect      Boolean?
+}
+
+model MockExam {
+  id             String           @id @default(uuid())
+  user           User             @relation(fields: [userId], references: [id])
+  userId         String
+  exam           Exam             @relation(fields: [examId], references: [id])
+  examId         String
+  startedAt      DateTime         @default(now())
+  completedAt    DateTime?
+  score          Int?
+  questions      MockExamQuestion[]
+}
+
+model MockExamQuestion {
+  id             String           @id @default(uuid())
+  mockExam       MockExam         @relation(fields: [mockExamId], references: [id])
+  mockExamId     String
+  question       Question         @relation(fields: [questionId], references: [id])
+  questionId     String
+  userAnswer     String?
+  isCorrect      Boolean?
+}
+
+model StudySession {
+  id             String           @id @default(uuid())
+  user           User             @relation(fields: [userId], references: [id])
+  userId         String
+  startedAt      DateTime         @default(now())
+  endedAt        DateTime?
+  duration       Int?             // Duration in minutes
+}
