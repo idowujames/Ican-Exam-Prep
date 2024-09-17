@@ -12,38 +12,16 @@ datasource db {
 }
 
 model User {
-  id           String    @id @unique
-  email          String           @unique
-  password       String
-  name           String
-  role           Role             @default(STUDENT)
-  auth_session Session[]
-  key          Key[]
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  practiceExams  PracticeExam[]
-  mockExams      MockExam[]
-  studySessions  StudySession[]
-}
-
-
-model Session {
-  id             String @id @unique
-  user_id        String
-  active_expires BigInt
-  idle_expires   BigInt
-  user           User   @relation(references: [id], fields: [user_id], onDelete: Cascade)
-
-  @@index([user_id])
-}
-
-model Key {
-  id              String  @id @unique
-  hashed_password String?
-  user_id         String
-  user            User    @relation(references: [id], fields: [user_id], onDelete: Cascade)
-
-  @@index([user_id])
+  id              String    @id @default(uuid())
+  kindeAuthId     String    @unique
+  email           String    @unique
+  name            String
+  role            Role      @default(STUDENT)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  practiceExams   PracticeExam[]
+  mockExams       MockExam[]
+  studySessions   StudySession[]
 }
 
 enum Role {
@@ -54,9 +32,11 @@ enum Role {
 model Exam {
   id             String           @id @default(uuid())
   name           String
+  description    String?
   subject        Subject          @relation(fields: [subjectId], references: [id])
   subjectId      String
   diet           String
+  timeLimit      Int
   questions      Question[]
   practiceExams  PracticeExam[]
   mockExams      MockExam[]
@@ -65,8 +45,10 @@ model Exam {
 model Subject {
   id             String           @id @default(uuid())
   name           String           @unique
+  description    String?
   exams          Exam[]
   questions      Question[]
+  studySessions  StudySession[]
 }
 
 model Question {
@@ -140,6 +122,8 @@ model StudySession {
   id             String           @id @default(uuid())
   user           User             @relation(fields: [userId], references: [id])
   userId         String
+  subject        Subject          @relation(fields: [subjectId], references: [id])
+  subjectId      String
   startedAt      DateTime         @default(now())
   endedAt        DateTime?
   duration       Int?             // Duration in minutes
