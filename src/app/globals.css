@@ -53,6 +53,11 @@ body {
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+    /* for tab */
+    --tab-background: 210 40% 96.1%;
+    --tab-foreground: 215.4 16.3% 46.9%;
+    --tab-active-background: 0 0% 100%;
+    --tab-active-foreground: 222.2 47.4% 11.2%;
   }
   .dark {
     --background: 222.2 84% 4.9%;
@@ -79,7 +84,53 @@ body {
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+    /* For the tabs in dark mode */
+    --tab-background: 217.2 32.6% 17.5%;
+    --tab-foreground: 215 20.2% 65.1%;
+    --tab-active-background: 222.2 84% 4.9%;
+    --tab-active-foreground: 210 40% 98%;
   }
+}
+
+/* New styles for the tabs */
+.tabs-list {
+  background-color: hsl(var(--tab-background));
+  border-radius: var(--radius);
+  padding: 2px;
+}
+
+.tab-trigger {
+  background-color: transparent;
+  color: hsl(var(--tab-foreground));
+  transition: all 0.2s ease;
+}
+
+.tab-trigger:hover {
+  background-color: hsl(var(--tab-active-background) / 0.8);
+  color: hsl(var(--tab-active-foreground));
+}
+
+.tab-trigger[data-state="active"] {
+  background-color: hsl(var(--tab-active-background));
+  color: hsl(var(--tab-active-foreground));
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+.tab-content {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+/* Add these new styles to override the default Radix UI styles */
+[data-radix-collection-item][data-state="active"] {
+  background-color: hsl(var(--tab-active-background)) !important;
+  color: hsl(var(--tab-active-foreground)) !important;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1) !important;
+}
+
+[data-radix-collection-item]:not([data-state="active"]) {
+  background-color: transparent !important;
+  color: hsl(var(--tab-foreground)) !important;
 }
 
 @layer base {

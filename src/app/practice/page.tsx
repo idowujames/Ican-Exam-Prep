@@ -78,13 +78,13 @@ export default function PracticeSubjectSelection() {
         </Link>
       </div>
       <Tabs defaultValue={examTypes[0]?.id}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-3 tabs-list">
           {examTypes.map(examType => (
-            <TabsTrigger key={examType.id} value={examType.id}>{examType.name}</TabsTrigger>
+            <TabsTrigger key={examType.id} value={examType.id} className="tab-trigger">{examType.name}</TabsTrigger>
           ))}
         </TabsList>
         {examTypes.map(examType => (
-          <TabsContent key={examType.id} value={examType.id} className="mt-6">
+          <TabsContent key={examType.id} value={examType.id} className="mt-6 tab-content">
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {examType.courses.map(course => (
                 <Card key={course.id}>
