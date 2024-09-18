@@ -1,5 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// prisma/schema.prisma
 
 generator client {
   provider = "prisma-client-js"
@@ -11,62 +10,50 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-model User {
-  id              String    @id @default(uuid())
-  kindeAuthId     String    @unique
-  email           String    @unique
-  name            String
-  role            Role      @default(STUDENT)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  practiceExams   PracticeExam[]
-  mockExams       MockExam[]
-  studySessions   StudySession[]
+model ExamType {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  courses     Course[]
 }
 
-enum Role {
-  STUDENT
-  ADMIN
+model Course {
+  id            String         @id @default(uuid())
+  name          String
+  examType      ExamType       @relation(fields: [examTypeId], references: [id])
+  examTypeId    String
+  diets         Diet[]
+  questions     Question[]
+  practiceExams PracticeExam[]
+  mockExams     MockExam[]
+  studySessions StudySession[]
 }
 
-model Exam {
-  id             String           @id @default(uuid())
-  name           String
-  description    String?
-  subject        Subject          @relation(fields: [subjectId], references: [id])
-  subjectId      String
-  diet           String
-  timeLimit      Int
-  questions      Question[]
-  practiceExams  PracticeExam[]
-  mockExams      MockExam[]
-}
-
-model Subject {
-  id             String           @id @default(uuid())
-  name           String           @unique
-  description    String?
-  exams          Exam[]
-  questions      Question[]
-  studySessions  StudySession[]
+model Diet {
+  id            String         @id @default(uuid())
+  name          String
+  course        Course         @relation(fields: [courseId], references: [id])
+  courseId      String
+  questions     Question[]
+  practiceExams PracticeExam[]
 }
 
 model Question {
-  id             String           @id @default(uuid())
-  exam           Exam             @relation(fields: [examId], references: [id])
-  examId         String
-  subject        Subject          @relation(fields: [subjectId], references: [id])
-  subjectId      String
-  type           QuestionType
-  content        String
-  options        Json?            // For MCQs, stored as JSON
-  correctAnswer  String
-  explanation    String
+  id                    String                 @id @default(uuid())
+  diet                  Diet                   @relation(fields: [dietId], references: [id])
+  dietId                String
+  course                Course                 @relation(fields: [courseId], references: [id])
+  courseId              String
+  type                  QuestionType
+  content               String
+  options               Json? // For MCQs, stored as JSON
+  correctAnswer         String
+  explanation           String
   simplifiedExplanation String
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
   practiceExamQuestions PracticeExamQuestion[]
-  mockExamQuestions MockExamQuestion[]
+  mockExamQuestions     MockExamQuestion[]
 }
 
 enum QuestionType {
@@ -75,56 +62,76 @@ enum QuestionType {
 }
 
 model PracticeExam {
-  id             String           @id @default(uuid())
-  user           User             @relation(fields: [userId], references: [id])
-  userId         String
-  exam           Exam             @relation(fields: [examId], references: [id])
-  examId         String
-  startedAt      DateTime         @default(now())
-  completedAt    DateTime?
-  score          Int?
-  questions      PracticeExamQuestion[]
+  id          String                 @id @default(uuid())
+  user        User                   @relation(fields: [userId], references: [id])
+  userId      String
+  course      Course                 @relation(fields: [courseId], references: [id])
+  courseId    String
+  diet        Diet                   @relation(fields: [dietId], references: [id])
+  dietId      String
+  startedAt   DateTime               @default(now())
+  completedAt DateTime?
+  score       Int?
+  questions   PracticeExamQuestion[]
 }
 
 model PracticeExamQuestion {
-  id             String           @id @default(uuid())
-  practiceExam   PracticeExam     @relation(fields: [practiceExamId], references: [id])
+  id             String       @id @default(uuid())
+  practiceExam   PracticeExam @relation(fields: [practiceExamId], references: [id])
   practiceExamId String
-  question       Question         @relation(fields: [questionId], references: [id])
+  question       Question     @relation(fields: [questionId], references: [id])
   questionId     String
   userAnswer     String?
   isCorrect      Boolean?
 }
 
 model MockExam {
-  id             String           @id @default(uuid())
-  user           User             @relation(fields: [userId], references: [id])
-  userId         String
-  exam           Exam             @relation(fields: [examId], references: [id])
-  examId         String
-  startedAt      DateTime         @default(now())
-  completedAt    DateTime?
-  score          Int?
-  questions      MockExamQuestion[]
+  id          String             @id @default(uuid())
+  user        User               @relation(fields: [userId], references: [id])
+  userId      String
+  course      Course             @relation(fields: [courseId], references: [id])
+  courseId    String
+  startedAt   DateTime           @default(now())
+  completedAt DateTime?
+  score       Int?
+  questions   MockExamQuestion[]
 }
 
 model MockExamQuestion {
-  id             String           @id @default(uuid())
-  mockExam       MockExam         @relation(fields: [mockExamId], references: [id])
-  mockExamId     String
-  question       Question         @relation(fields: [questionId], references: [id])
-  questionId     String
-  userAnswer     String?
-  isCorrect      Boolean?
+  id         String   @id @default(uuid())
+  mockExam   MockExam @relation(fields: [mockExamId], references: [id])
+  mockExamId String
+  question   Question @relation(fields: [questionId], references: [id])
+  questionId String
+  userAnswer String?
+  isCorrect  Boolean?
+}
+
+model User {
+  id            String         @id @default(uuid())
+  kindeAuthId   String         @unique
+  email         String         @unique
+  name          String
+  role          Role           @default(STUDENT)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  practiceExams PracticeExam[]
+  mockExams     MockExam[]
+  studySessions StudySession[]
+}
+
+enum Role {
+  STUDENT
+  ADMIN
 }
 
 model StudySession {
-  id             String           @id @default(uuid())
-  user           User             @relation(fields: [userId], references: [id])
-  userId         String
-  subject        Subject          @relation(fields: [subjectId], references: [id])
-  subjectId      String
-  startedAt      DateTime         @default(now())
-  endedAt        DateTime?
-  duration       Int?             // Duration in minutes
+  id        String    @id @default(uuid())
+  user      User      @relation(fields: [userId], references: [id])
+  userId    String
+  course    Course    @relation(fields: [courseId], references: [id])
+  courseId  String
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+  duration  Int? // Duration in minutes
 }

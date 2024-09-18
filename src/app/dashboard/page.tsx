@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Clock, FileText, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
+import Link from 'next/link';
 
 interface DashboardData {
   totalQuestionsAttempted: number;
@@ -64,9 +65,9 @@ export default function Dashboard() {
             <h1 className="text-xl font-semibold text-gray-900">ICAN Exam Prep</h1>
           </div>
           <nav className="flex items-center space-x-4">
-            <a className="text-gray-500 hover:text-gray-700" href="#">
+          <Link href="#" className="text-gray-500 hover:text-gray-700">
               Profile
-            </a>
+          </Link>
             <a className="text-gray-500 hover:text-gray-700" href="#">
               Settings
             </a>
@@ -153,10 +154,16 @@ export default function Dashboard() {
               <CardTitle>Quick Start</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col space-y-4">
-              <Button className="w-full">Start Practice Mode</Button>
-              <Button className="w-full" variant="outline">
-                Take Mock Exam
-              </Button>
+              <Link href="/practice" passHref legacyBehavior>
+                <Button className="w-full" asChild>
+                  <a>Start Practice Mode</a>
+                </Button>
+              </Link>
+              <Link href="/mock-exam" passHref legacyBehavior>
+                <Button className="w-full" variant="outline" asChild>
+                  <a>Take Mock Exam</a>
+                </Button>
+              </Link>
             </CardContent>
           </Card>
         </div>
