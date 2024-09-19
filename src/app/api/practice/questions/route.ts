@@ -27,6 +27,14 @@ export async function GET(request: Request) {
         explanation: true,
         simplifiedExplanation: true,
       },
+      orderBy: [
+        {
+          type: 'asc', // This will put MCQs first as 'MCQ' comes before 'LONG_FORM' alphabetically
+        },
+        {
+          id: 'asc', // Secondary sort by id to ensure consistent ordering
+        },
+      ],
     });
 
     return NextResponse.json(questions);

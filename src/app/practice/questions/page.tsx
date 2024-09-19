@@ -27,6 +27,7 @@ interface PracticeSession {
     currentQuestionIndex: number;
     answers: { [questionId: string]: string };
     startTime: number;
+    isFinished: boolean;
 }
 
 export default function PracticeQuestions() {
@@ -39,6 +40,7 @@ export default function PracticeQuestions() {
   const [showExplanation, setShowExplanation] = useState(false);
   const [isAnswerSubmitted, setIsAnswerSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (courseId && dietId) {
@@ -56,12 +58,19 @@ export default function PracticeQuestions() {
       });
       if (!response.ok) throw new Error('Failed to start practice session');
       const data = await response.json();
+      
+      // Sort questions to put MCQs first
+      const sortedQuestions = data.questions.sort((a: Question, b: Question) => 
+        a.type === 'MCQ' ? -1 : b.type === 'MCQ' ? 1 : 0
+      );
+
       setSession({
         id: data.id,
-        questions: data.questions,
+        questions: sortedQuestions,
         currentQuestionIndex: 0,
         answers: {},
         startTime: Date.now(),
+        isFinished: false,
       });
     } catch (error) {
       console.error('Error starting practice session:', error);
@@ -85,8 +94,6 @@ export default function PracticeQuestions() {
   const handleSubmitAnswer = async () => {
     if (!session) return;
     setIsAnswerSubmitted(true);
-    // In the new structure, we don't need to submit each answer to the backend
-    // We'll only submit the final results at the end of the session
   };
 
   const handleNextQuestion = () => {
@@ -117,7 +124,8 @@ export default function PracticeQuestions() {
   };
 
   const finishPracticeSession = async () => {
-    if (!session) return;
+    if (!session || session.isFinished || isSubmitting) return;
+    setIsSubmitting(true);
     setIsLoading(true);
     try {
       const response = await fetch('/api/practice/finish', {
@@ -131,12 +139,14 @@ export default function PracticeQuestions() {
       });
       if (!response.ok) throw new Error('Failed to finish practice session');
       const data = await response.json();
+      setSession(prev => ({ ...prev!, isFinished: true }));
       router.push(`/practice/summary?practiceExamId=${data.practiceExamId}`);
     } catch (error) {
       console.error('Error finishing practice session:', error);
       // Handle error (e.g., show error message to user)
     } finally {
       setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -245,10 +255,13 @@ export default function PracticeQuestions() {
               <ArrowLeft className="mr-2 h-4 w-4" />
               Previous
             </Button>
-            <Button onClick={handleNextQuestion}>
-              {session.currentQuestionIndex === session.questions.length - 1 ? 'Finish' : 'Next'}
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
+            <Button 
+                onClick={handleNextQuestion} 
+                disabled={session.isFinished || isSubmitting}
+              >
+                {session.currentQuestionIndex === session.questions.length - 1 ? 'Finish' : 'Next'}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
           </div>
         </CardContent>
       </Card>
