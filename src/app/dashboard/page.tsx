@@ -1,3 +1,5 @@
+// app/dashboard/page.tsx
+
 "use client";
 
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
@@ -7,17 +9,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Clock, FileText, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
+import { Loader2 } from "lucide-react";
 import Link from 'next/link';
 
 interface DashboardData {
   totalQuestionsAttempted: number;
-  averageScore?: number;
+  totalCorrectAnswers: number;
+  averageScore: number;
   studyTimeThisWeek: number;
   mockExamsCompleted: number;
-  recentActivity?: Array<{
+  recentActivity: Array<{
     type: string;
     subject: string;
-    score: number | null;
+    score: number;
+    completedAt: string;
   }>;
   name: string;
 }
@@ -43,8 +48,18 @@ export default function Dashboard() {
   }, [isAuthenticated]);
 
   if (isLoading || !dashboardData) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
   }
+
+  const formatTime = (minutes: number) => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    return `${hours}h ${mins}m`;
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
@@ -65,9 +80,9 @@ export default function Dashboard() {
             <h1 className="text-xl font-semibold text-gray-900">ICAN Exam Prep</h1>
           </div>
           <nav className="flex items-center space-x-4">
-          <Link href="#" className="text-gray-500 hover:text-gray-700">
+            <Link href="#" className="text-gray-500 hover:text-gray-700">
               Profile
-          </Link>
+            </Link>
             <a className="text-gray-500 hover:text-gray-700" href="#">
               Settings
             </a>
@@ -78,7 +93,7 @@ export default function Dashboard() {
         </div>
       </header>
       <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Welcome back, {user?.given_name || 'User'}!</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Welcome back, {dashboardData.name || 'User'}!</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -86,7 +101,7 @@ export default function Dashboard() {
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{dashboardData.totalQuestionsAttempted || 0}</div>
+              <div className="text-2xl font-bold">{dashboardData.totalQuestionsAttempted}</div>
             </CardContent>
           </Card>
           <Card>
@@ -96,8 +111,8 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {dashboardData.averageScore !== undefined 
-                  ? `${dashboardData.averageScore.toFixed(2)}%` 
+                {dashboardData.averageScore !== undefined && dashboardData.averageScore !== null
+                  ? `${dashboardData.averageScore.toFixed(2)}%`
                   : 'N/A'}
               </div>
             </CardContent>
@@ -108,9 +123,7 @@ export default function Dashboard() {
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {Math.floor((dashboardData.studyTimeThisWeek || 0) / 60)}h {(dashboardData.studyTimeThisWeek || 0) % 60}m
-              </div>
+              <div className="text-2xl font-bold">{formatTime(dashboardData.studyTimeThisWeek)}</div>
             </CardContent>
           </Card>
           <Card>
@@ -119,7 +132,7 @@ export default function Dashboard() {
               <User className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{dashboardData.mockExamsCompleted || 0}</div>
+              <div className="text-2xl font-bold">{dashboardData.mockExamsCompleted}</div>
             </CardContent>
           </Card>
         </div>
@@ -135,11 +148,11 @@ export default function Dashboard() {
                     <li key={index} className="flex justify-between items-center">
                       <span>{activity.type}: {activity.subject}</span>
                       <span className={`font-semibold ${
-                        activity.score && activity.score >= 70 ? 'text-green-600' : 
-                        activity.score && activity.score >= 50 ? 'text-yellow-600' : 
+                        activity.score >= 70 ? 'text-green-600' : 
+                        activity.score >= 50 ? 'text-yellow-600' : 
                         'text-red-600'
                       }`}>
-                        {activity.score !== null ? `${activity.score}%` : 'N/A'}
+                        {activity.score.toFixed(2)}%
                       </span>
                     </li>
                   ))}

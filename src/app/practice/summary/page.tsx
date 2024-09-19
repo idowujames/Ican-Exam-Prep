@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 
 interface SummaryData {
   totalQuestions: number;
@@ -45,7 +46,11 @@ export default function PracticeSummary() {
   };
 
   if (isLoading) {
-    return <div>Loading summary...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
   }
 
   if (!summaryData) {
@@ -60,8 +65,8 @@ export default function PracticeSummary() {
   };
 
   return (
-    <div className="container mx-auto min-h-screen p-4 md:p-6">
-      <Card>
+    <div className="container mx-auto min-h-screen p-4 md:p-6 bg-gradient-to-br from-gray-50 to-gray-100">
+      <Card className="max-w-3xl mx-auto shadow-lg">
         <CardHeader>
           <CardTitle>Practice Session Summary</CardTitle>
         </CardHeader>

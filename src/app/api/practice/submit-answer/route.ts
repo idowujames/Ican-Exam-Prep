@@ -1,4 +1,4 @@
-// src/app/api/practice/submit-answer/route.ts
+// app/api/practice/submit-answer/route.ts
 
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -12,10 +12,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { practiceExamId, questionId, answer } = await request.json();
+  const { practiceExamId, questionId, answer, timeSpent } = await request.json();
 
-  if (!practiceExamId || !questionId || answer === undefined) {
-    return NextResponse.json({ error: 'Practice Exam ID, Question ID, and answer are required' }, { status: 400 });
+  if (!practiceExamId || !questionId || answer === undefined || timeSpent === undefined) {
+    return NextResponse.json({ error: 'Practice Exam ID, Question ID, answer, and timeSpent are required' }, { status: 400 });
   }
 
   try {
@@ -29,28 +29,20 @@ export async function POST(request: Request) {
 
     const isCorrect = question.correctAnswer === answer;
 
-    // First, find the PracticeExamQuestion
-    const practiceExamQuestion = await prisma.practiceExamQuestion.findFirst({
-      where: {
-        practiceExamId: practiceExamId,
-        questionId: questionId,
-      },
-    });
-
-    if (!practiceExamQuestion) {
-      return NextResponse.json({ error: 'Practice Exam Question not found' }, { status: 404 });
-    }
-
-    // Then, update the found PracticeExamQuestion
-    const updatedPracticeExamQuestion = await prisma.practiceExamQuestion.update({
-      where: { id: practiceExamQuestion.id },
+    // Update the PracticeExam
+    const updatedPracticeExam = await prisma.practiceExam.update({
+      where: { id: practiceExamId },
       data: {
-        userAnswer: answer,
-        isCorrect,
+        correctAnswers: {
+          increment: isCorrect ? 1 : 0
+        },
+        timeSpent: {
+          increment: timeSpent
+        }
       },
     });
 
-    return NextResponse.json({ isCorrect, practiceExamQuestion: updatedPracticeExamQuestion });
+    return NextResponse.json({ isCorrect, updatedPracticeExam });
   } catch (error) {
     console.error('Error submitting answer:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

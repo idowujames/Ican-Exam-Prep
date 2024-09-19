@@ -1,4 +1,4 @@
-// src/app/api/practice/summary/route.ts
+// app/api/practice/summary/route.ts
 
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -23,11 +23,7 @@ export async function GET(request: Request) {
     const practiceExam = await prisma.practiceExam.findUnique({
       where: { id: practiceExamId },
       include: {
-        questions: {
-          include: {
-            question: true,
-          },
-        },
+        course: true,
       },
     });
 
@@ -35,22 +31,83 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Practice Exam not found' }, { status: 404 });
     }
 
-    const mcqQuestions = practiceExam.questions.filter(q => q.question.type === 'MCQ');
-    const totalQuestions = mcqQuestions.length;
-    const correctAnswers = mcqQuestions.filter(q => q.isCorrect).length;
-    const incorrectAnswers = mcqQuestions.filter(q => q.isCorrect === false).length;
-    const unanswered = mcqQuestions.filter(q => q.userAnswer === null).length;
+    const score = (practiceExam.correctAnswers / practiceExam.totalQuestions) * 100;
 
-    const startTime = practiceExam.startedAt;
-    const endTime = practiceExam.completedAt || new Date();
-    const timeSpent = Math.floor((endTime.getTime() - startTime.getTime()) / 1000); // in seconds
+      // Fetch current UserProgress
+  const currentProgress = await prisma.userProgress.findUnique({
+    where: {
+      userId_courseId: {
+        userId: user.id,
+        courseId: practiceExam.courseId,
+      },
+    },
+  });
+
+  // Calculate new average score
+  let newAverageScore: number;
+  if (currentProgress) {
+    const totalScore = currentProgress.averageScore * currentProgress.totalAttempts + score;
+    newAverageScore = totalScore / (currentProgress.totalAttempts + 1);
+  } else {
+    newAverageScore = score;
+  }
+
+  // Update UserProgress
+  await prisma.userProgress.upsert({
+    where: {
+      userId_courseId: {
+        userId: user.id,
+        courseId: practiceExam.courseId,
+      },
+    },
+    update: {
+      totalAttempts: { increment: 1 },
+      totalQuestions: { increment: practiceExam.totalQuestions },
+      totalCorrect: { increment: practiceExam.correctAnswers },
+      totalTimeSpent: { increment: practiceExam.timeSpent },
+      averageScore: newAverageScore,
+    },
+    create: {
+      userId: user.id,
+      courseId: practiceExam.courseId,
+      totalAttempts: 1,
+      totalQuestions: practiceExam.totalQuestions,
+      totalCorrect: practiceExam.correctAnswers,
+      averageScore: score,
+      totalTimeSpent: practiceExam.timeSpent,
+    },
+  });
+
+    // Add to RecentActivity
+    await prisma.recentActivity.create({
+      data: {
+        userId: user.id,
+        courseId: practiceExam.courseId,
+        activityType: 'Practice',
+        score: score,
+        completedAt: new Date(),
+      },
+    });
+
+    // Limit RecentActivity to last 20 entries
+    const recentActivities = await prisma.recentActivity.findMany({
+      where: { userId: user.id },
+      orderBy: { completedAt: 'desc' },
+      take: 21, // Fetch one extra to check if we need to delete
+    });
+
+    if (recentActivities.length > 20) {
+      await prisma.recentActivity.delete({
+        where: { id: recentActivities[20].id },
+      });
+    }
 
     const summaryData = {
-      totalQuestions,
-      correctAnswers,
-      incorrectAnswers,
-      unanswered,
-      timeSpent,
+      totalQuestions: practiceExam.totalQuestions,
+      correctAnswers: practiceExam.correctAnswers,
+      incorrectAnswers: practiceExam.totalQuestions - practiceExam.correctAnswers,
+      score: score,
+      timeSpent: practiceExam.timeSpent,
     };
 
     return NextResponse.json(summaryData);

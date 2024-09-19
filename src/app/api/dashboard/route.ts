@@ -1,44 +1,8 @@
+// app/api/dashboard/route.ts
+
 import { NextResponse } from 'next/server';
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import prisma from '@/lib/prisma';
-
-// Define the Role type if it's not already defined elsewhere
-type Role = 'STUDENT' | 'ADMIN';
-
-// Define the interface for the user with all related data
-interface UserWithRelations {
-  id: string;
-  email: string;
-  password: string;
-  name: string;
-  role: Role;
-  createdAt: Date;
-  updatedAt: Date;
-  practiceExams: Array<{
-    questions: Array<any>;
-    completedAt: Date | null;
-    score: number | null;
-    exam: {
-      subject: {
-        name: string;
-      };
-    };
-  }>;
-  mockExams: Array<{
-    questions: Array<any>;
-    completedAt: Date | null;
-    score: number | null;
-    exam: {
-      subject: {
-        name: string;
-      };
-    };
-  }>;
-  studySessions: Array<{
-    startedAt: Date;
-    duration: number | null;
-  }>;
-}
 
 export async function GET() {
   const { getUser, isAuthenticated } = getKindeServerSession();
@@ -49,76 +13,66 @@ export async function GET() {
 
   const user = await getUser();
 
-  if (!user || !user.email) {
+  if (!user || !user.id) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
   }
 
   try {
-    const dbUser = await prisma.user.findUnique({
-      where: { email: user.email },
+    // Fetch user progress data
+    const userProgress = await prisma.userProgress.findMany({
+      where: { userId: user.id },
       include: {
-        practiceExams: {
-          include: {
-            exam: {
-              include: {
-                subject: true
-              }
-            },
-            questions: true
-          }
-        },
-        mockExams: {
-          include: {
-            exam: {
-              include: {
-                subject: true
-              }
-            },
-            questions: true
-          }
-        },
-        studySessions: true,
+        course: true,
       },
-    }) as UserWithRelations | null;
-
-    if (!dbUser) {
-      return NextResponse.json({ error: 'User not found in database' }, { status: 404 });
-    }
+    });
 
     // Calculate dashboard data
-    const totalQuestionsAttempted = 
-      (dbUser.practiceExams?.reduce((sum, exam) => sum + exam.questions.length, 0) || 0) +
-      (dbUser.mockExams?.reduce((sum, exam) => sum + exam.questions.length, 0) || 0);
+      const totalQuestionsAttempted = userProgress.reduce((sum, progress) => sum + progress.totalQuestions, 0);
+      const totalCorrectAnswers = userProgress.reduce((sum, progress) => sum + progress.totalCorrect, 0);
+      const averageScore = totalQuestionsAttempted > 0
+        ? (totalCorrectAnswers / totalQuestionsAttempted) * 100
+        : 0;
 
-    const allExams = [...dbUser.practiceExams, ...dbUser.mockExams];
-    const completedExams = allExams.filter(exam => exam.completedAt !== null && exam.score !== null);
-    const averageScore = completedExams.length > 0
-      ? completedExams.reduce((sum, exam) => sum + (exam.score || 0), 0) / completedExams.length
-      : 0;
-
+    // Fetch study time for the last week
     const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    const studyTimeThisWeek = dbUser.studySessions
-      .filter(session => session.startedAt > oneWeekAgo)
-      .reduce((sum, session) => sum + (session.duration || 0), 0);
+    const studySessions = await prisma.studySession.findMany({
+      where: {
+        userId: user.id,
+        startedAt: { gte: oneWeekAgo },
+      },
+    });
+    const studyTimeThisWeek = studySessions.reduce((sum, session) => sum + (session.duration || 0), 0);
 
-    const mockExamsCompleted = dbUser.mockExams.filter(exam => exam.completedAt !== null).length;
+    // Fetch recent activity
+    const recentActivity = await prisma.recentActivity.findMany({
+      where: { userId: user.id },
+      orderBy: { completedAt: 'desc' },
+      take: 5,
+      include: {
+        course: true,
+      },
+    });
 
-    const recentActivity = [...dbUser.practiceExams, ...dbUser.mockExams]
-      .filter(exam => exam.completedAt !== null)
-      .sort((a, b) => (b.completedAt?.getTime() || 0) - (a.completedAt?.getTime() || 0))
-      .slice(0, 5)
-      .map(exam => ({
-        type: 'practiceExams' in exam ? 'Practice' : 'Mock Exam',
-        subject: exam.exam.subject.name,
-        score: exam.score
-      }));
+    // Count completed mock exams
+    const mockExamsCompleted = await prisma.mockExam.count({
+      where: {
+        userId: user.id,
+        completedAt: { not: null },
+      },
+    });
 
     return NextResponse.json({
       totalQuestionsAttempted,
+      totalCorrectAnswers,  // Include this in the response
       averageScore,
       studyTimeThisWeek,
       mockExamsCompleted,
-      recentActivity,
+      recentActivity: recentActivity.map(activity => ({
+        type: activity.activityType,
+        subject: activity.course.name,
+        score: activity.score,
+        completedAt: activity.completedAt,
+      })),
       name: user.given_name,
     });
 
