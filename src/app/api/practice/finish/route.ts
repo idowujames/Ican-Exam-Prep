@@ -19,127 +19,133 @@ export async function POST(request: Request) {
   }
 
   try {
-    // Check if the practice exam has already been completed
-    const existingPracticeExam = await prisma.practiceExam.findUnique({
-      where: { id: practiceExamId },
-    });
+    const result = await prisma.$transaction(async (prisma) => {
+      // Check if the practice exam has already been completed
+      const existingPracticeExam = await prisma.practiceExam.findUnique({
+        where: { id: practiceExamId },
+      });
 
-    if (existingPracticeExam && existingPracticeExam.completedAt) {
-      return NextResponse.json({ error: 'Practice exam already completed' }, { status: 400 });
-    }
-
-    // Fetch the practice exam
-    const practiceExam = await prisma.practiceExam.findUnique({
-      where: { id: practiceExamId },
-      include: { course: true },
-    });
-
-    if (!practiceExam) {
-      return NextResponse.json({ error: 'Practice exam not found' }, { status: 404 });
-    }
-
-    // Fetch questions for this practice exam
-    const questions = await prisma.question.findMany({
-      where: {
-        courseId: practiceExam.courseId,
-        dietId: practiceExam.dietId,
-      },
-    });
-
-    // Calculate results (only for MCQs)
-    let correctAnswers = 0;
-    let totalMCQs = 0;
-    questions.forEach(question => {
-      if (question.type === 'MCQ') {
-        totalMCQs++;
-        if (answers[question.id] === question.correctAnswer) {
-          correctAnswers++;
-        }
+      if (existingPracticeExam && existingPracticeExam.completedAt) {
+        throw new Error('Practice exam already completed');
       }
-    });
 
-    const score = totalMCQs > 0 ? (correctAnswers / totalMCQs) * 100 : 0;
+      // Fetch the practice exam
+      const practiceExam = await prisma.practiceExam.findUnique({
+        where: { id: practiceExamId },
+        include: { course: true },
+      });
 
-    // Update the practice exam
-    const updatedPracticeExam = await prisma.practiceExam.update({
-      where: { id: practiceExamId },
-      data: {
-        completedAt: new Date(),
-        totalQuestions: totalMCQs,
+      if (!practiceExam) {
+        throw new Error('Practice exam not found');
+      }
+
+      // Fetch questions for this practice exam
+      const questions = await prisma.question.findMany({
+        where: {
+          courseId: practiceExam.courseId,
+          dietId: practiceExam.dietId,
+        },
+      });
+
+      // Calculate results (only for MCQs)
+      let correctAnswers = 0;
+      let totalMCQs = 0;
+      questions.forEach(question => {
+        if (question.type === 'MCQ') {
+          totalMCQs++;
+          if (answers[question.id] === question.correctAnswer) {
+            correctAnswers++;
+          }
+        }
+      });
+
+      const score = totalMCQs > 0 ? (correctAnswers / totalMCQs) * 100 : 0;
+
+      // Update the practice exam
+      const updatedPracticeExam = await prisma.practiceExam.update({
+        where: { id: practiceExamId },
+        data: {
+          completedAt: new Date(),
+          totalQuestions: totalMCQs,
+          correctAnswers,
+          score,
+          timeSpent,
+        },
+      });
+
+      // Fetch current user progress
+      const currentProgress = await prisma.userProgress.findUnique({
+        where: {
+          userId_courseId: {
+            userId: user.id,
+            courseId: practiceExam.courseId,
+          },
+        },
+      });
+
+      // Calculate new average score
+      let newTotalAttempts = 1;
+      let newAverageScore = score;
+
+      if (currentProgress) {
+        newTotalAttempts = currentProgress.totalAttempts + 1;
+        const totalScore = currentProgress.averageScore * currentProgress.totalAttempts + score;
+        newAverageScore = totalScore / newTotalAttempts;
+      }
+
+      // Update user progress
+      await prisma.userProgress.upsert({
+        where: {
+          userId_courseId: {
+            userId: user.id,
+            courseId: practiceExam.courseId,
+          },
+        },
+        update: {
+          totalAttempts: newTotalAttempts,
+          totalQuestions: { increment: totalMCQs },
+          totalCorrect: { increment: correctAnswers },
+          totalTimeSpent: { increment: timeSpent },
+          averageScore: newAverageScore,
+        },
+        create: {
+          userId: user.id,
+          courseId: practiceExam.courseId,
+          totalAttempts: 1,
+          totalQuestions: totalMCQs,
+          totalCorrect: correctAnswers,
+          averageScore: score,
+          totalTimeSpent: timeSpent,
+        },
+      });
+
+      // Add to recent activity
+      await prisma.recentActivity.create({
+        data: {
+          userId: user.id,
+          courseId: practiceExam.courseId,
+          activityType: 'Practice',
+          score,
+          completedAt: new Date(),
+        },
+      });
+
+      return {
+        message: 'Practice exam completed successfully',
+        practiceExamId: updatedPracticeExam.id,
+        score,
         correctAnswers,
-        score,
-        timeSpent,
-      },
-    });
-
-    // Fetch current user progress
-    const currentProgress = await prisma.userProgress.findUnique({
-      where: {
-        userId_courseId: {
-          userId: user.id,
-          courseId: practiceExam.courseId,
-        },
-      },
-    });
-
-    // Calculate new average score
-    let newTotalAttempts = 1;
-    let newAverageScore = score;
-
-    if (currentProgress) {
-      newTotalAttempts = currentProgress.totalAttempts + 1;
-      const totalScore = currentProgress.averageScore * currentProgress.totalAttempts + score;
-      newAverageScore = totalScore / newTotalAttempts;
-    }
-
-    // Update user progress
-    await prisma.userProgress.upsert({
-      where: {
-        userId_courseId: {
-          userId: user.id,
-          courseId: practiceExam.courseId,
-        },
-      },
-      update: {
-        totalAttempts: newTotalAttempts,
-        totalQuestions: { increment: totalMCQs },
-        totalCorrect: { increment: correctAnswers },
-        totalTimeSpent: { increment: timeSpent },
-        averageScore: newAverageScore,
-      },
-      create: {
-        userId: user.id,
-        courseId: practiceExam.courseId,
-        totalAttempts: 1,
         totalQuestions: totalMCQs,
-        totalCorrect: correctAnswers,
-        averageScore: score,
-        totalTimeSpent: timeSpent,
-      },
+        timeSpent,
+      };
     });
 
-    // Add to recent activity
-    await prisma.recentActivity.create({
-      data: {
-        userId: user.id,
-        courseId: practiceExam.courseId,
-        activityType: 'Practice',
-        score,
-        completedAt: new Date(),
-      },
-    });
-
-    return NextResponse.json({
-      message: 'Practice exam completed successfully',
-      practiceExamId: updatedPracticeExam.id,
-      score,
-      correctAnswers,
-      totalQuestions: totalMCQs,
-      timeSpent,
-    });
-    
+    return NextResponse.json(result);
   } catch (error) {
     console.error('Error finishing practice exam:', error);
+    if (error instanceof Error && error.message === 'Practice exam already completed') {
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

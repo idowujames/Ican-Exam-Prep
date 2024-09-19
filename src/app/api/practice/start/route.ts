@@ -19,47 +19,48 @@ export async function POST(request: Request) {
   }
 
   try {
-    // Fetch questions for the practice exam
-    const questions = await prisma.question.findMany({
-      where: {
-        courseId: courseId,
-        dietId: dietId,
-      },
-      select: {
-        id: true,
-        type: true,
-        content: true,
-        options: true,
-        correctAnswer: true,
-        explanation: true,
-        simplifiedExplanation: true,
-      },
+    // Use a transaction to ensure atomicity
+    const result = await prisma.$transaction(async (prisma) => {
+      // Fetch questions for the practice exam
+      const questions = await prisma.question.findMany({
+        where: {
+          courseId: courseId,
+          dietId: dietId,
+        },
+        select: {
+          id: true,
+          type: true,
+          content: true,
+          options: true,
+          correctAnswer: true,
+          explanation: true,
+          simplifiedExplanation: true,
+        },
+      });
+
+      // Parse the options JSON
+      const parsedQuestions = questions.map(q => ({
+        ...q,
+        options: q.options ? JSON.parse(q.options as string) : null
+      }));
+
+      // Create a new practice exam
+      const practiceExam = await prisma.practiceExam.create({
+        data: {
+          userId: user.id,
+          courseId: courseId,
+          dietId: dietId,
+          totalQuestions: questions.length,
+          correctAnswers: 0,
+          timeSpent: 0,
+          score: 0,
+        },
+      });
+
+      return { id: practiceExam.id, questions: parsedQuestions, totalQuestions: questions.length };
     });
 
-    // Parse the options JSON
-    const parsedQuestions = questions.map(q => ({
-      ...q,
-      options: q.options ? JSON.parse(q.options as string) : null
-    }));
-
-    // Create a new practice exam
-    const practiceExam = await prisma.practiceExam.create({
-      data: {
-        userId: user.id,
-        courseId: courseId,
-        dietId: dietId,
-        totalQuestions: questions.length,
-        correctAnswers: 0, // Initialize to 0
-        timeSpent: 0, // Initialize to 0
-        score: 0, // Initialize to 0
-      },
-    });
-
-    return NextResponse.json({ 
-      id: practiceExam.id, 
-      questions: parsedQuestions,
-      totalQuestions: questions.length
-    });
+    return NextResponse.json(result);
   } catch (error) {
     console.error('Error starting practice exam:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

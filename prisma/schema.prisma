@@ -68,6 +68,7 @@ model PracticeExam {
   course         Course    @relation(fields: [courseId], references: [id])
   diet           Diet      @relation(fields: [dietId], references: [id])
   user           User      @relation(fields: [userId], references: [id])
+  @@unique([userId, courseId, dietId, startedAt])
 }
 
 model MockExam {

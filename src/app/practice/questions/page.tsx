@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,6 +10,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, ArrowRight, Check, X, Loader2 } from "lucide-react";
+import { toast } from 'react-hot-toast'; // Add this import if you're using react-hot-toast for notifications
+import debounce from 'lodash.debounce'
 
 interface Question {
     id: string;
@@ -48,37 +50,40 @@ export default function PracticeQuestions() {
     }
   }, [courseId, dietId]);
 
-  const startPracticeSession = async (courseId: string, dietId: string) => {
-    setIsLoading(true);
-    try {
-      const response = await fetch('/api/practice/start', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ courseId, dietId }),
-      });
-      if (!response.ok) throw new Error('Failed to start practice session');
-      const data = await response.json();
-      
-      // Sort questions to put MCQs first
-      const sortedQuestions = data.questions.sort((a: Question, b: Question) => 
-        a.type === 'MCQ' ? -1 : b.type === 'MCQ' ? 1 : 0
-      );
+  const startPracticeSession = useCallback(
+    debounce(async (courseId: string, dietId: string) => {
+      setIsLoading(true);
+      try {
+        const response = await fetch('/api/practice/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ courseId, dietId }),
+        });
+        if (!response.ok) throw new Error('Failed to start practice session');
+        const data = await response.json();
+        
+        // Sort questions to put MCQs first
+        const sortedQuestions = data.questions.sort((a: Question, b: Question) => 
+          a.type === 'MCQ' ? -1 : b.type === 'MCQ' ? 1 : 0
+        );
 
-      setSession({
-        id: data.id,
-        questions: sortedQuestions,
-        currentQuestionIndex: 0,
-        answers: {},
-        startTime: Date.now(),
-        isFinished: false,
-      });
-    } catch (error) {
-      console.error('Error starting practice session:', error);
-      // Handle error (e.g., show error message to user)
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        setSession({
+          id: data.id,
+          questions: sortedQuestions,
+          currentQuestionIndex: 0,
+          answers: {},
+          startTime: Date.now(),
+          isFinished: false,
+        });
+      } catch (error) {
+        console.error('Error starting practice session:', error);
+        toast.error('Failed to start practice session. Please try again.'); // Add user-friendly error notification
+      } finally {
+        setIsLoading(false);
+      }
+    }, 300),
+    []
+  );
 
   const handleAnswerSelect = (answer: string) => {
     if (!session) return;
@@ -143,7 +148,7 @@ export default function PracticeQuestions() {
       router.push(`/practice/summary?practiceExamId=${data.practiceExamId}`);
     } catch (error) {
       console.error('Error finishing practice session:', error);
-      // Handle error (e.g., show error message to user)
+      toast.error('Failed to finish practice session. Please try again.'); // Add user-friendly error notification
     } finally {
       setIsLoading(false);
       setIsSubmitting(false);
