@@ -11,7 +11,18 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, ArrowRight, Check, X, Loader2 } from "lucide-react";
 import { toast } from 'react-hot-toast'; // Add this import if you're using react-hot-toast for notifications
-import debounce from 'lodash.debounce'
+import debounce from 'lodash.debounce';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Question {
     id: string;
@@ -155,6 +166,10 @@ export default function PracticeQuestions() {
     }
   };
 
+  const handleQuit = () => {
+    router.push('/practice');
+  };
+
   if (isLoading || !session) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -260,13 +275,38 @@ export default function PracticeQuestions() {
               <ArrowLeft className="mr-2 h-4 w-4" />
               Previous
             </Button>
-            <Button 
-                onClick={handleNextQuestion} 
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" className="bg-red-100 hover:bg-red-200">
+                  Quit
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="bg-white">
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you sure you want to quit?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Your progress will not be saved if you quit now.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleQuit}>Quit</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            {session.currentQuestionIndex === session.questions.length - 1 ? (
+              <Button 
+                onClick={finishPracticeExam} 
                 disabled={session.isFinished || isSubmitting}
               >
-                {session.currentQuestionIndex === session.questions.length - 1 ? 'Finish' : 'Next'}
+                Finish Practice
+              </Button>
+            ) : (
+              <Button onClick={handleNextQuestion}>
+                Next
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
+            )}
           </div>
         </CardContent>
       </Card>
