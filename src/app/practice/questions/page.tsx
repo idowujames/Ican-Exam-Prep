@@ -23,6 +23,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import MarkdownRenderer from '@/components/ui/MarkdownRenderer';
 
 interface Question {
     id: string;
@@ -191,7 +192,8 @@ export default function PracticeQuestions() {
             </span>
             <span className="text-sm font-medium text-gray-500">{currentQuestion.type}</span>
           </div>
-          <p className="text-lg mb-6">{currentQuestion.content}</p>
+          <MarkdownRenderer content={currentQuestion.content} />
+          <p className="mb-6"></p>
           
           {currentQuestion.type === 'MCQ' && (
             <RadioGroup onValueChange={handleAnswerSelect} value={userAnswer}>
