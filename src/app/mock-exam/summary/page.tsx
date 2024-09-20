@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import Link from 'next/link';
+import { DataTable } from "@/components/ui/data-table";
+import { columns } from "./columns";
 
 interface SummaryData {
   totalQuestions: number;
@@ -74,6 +76,8 @@ export default function MockExamSummary() {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
+  const mcqQuestions = summaryData.questions.filter(q => q.type === 'MCQ');
+
   return (
     <div className="container mx-auto min-h-screen p-4 md:p-6 bg-gradient-to-br from-gray-50 to-gray-100">
       <Card className="max-w-3xl mx-auto shadow-lg">
@@ -83,8 +87,8 @@ export default function MockExamSummary() {
         <CardContent>
           <div className="grid grid-cols-2 gap-4 mb-6">
             <div>
-              <p className="text-sm font-medium text-gray-500">Total Questions</p>
-              <p className="text-2xl font-bold">{summaryData.totalQuestions}</p>
+              <p className="text-sm font-medium text-gray-500">Total MCQs</p>
+              <p className="text-2xl font-bold">{mcqQuestions.length}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Correct Answers (MCQs)</p>
@@ -92,7 +96,7 @@ export default function MockExamSummary() {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Incorrect Answers (MCQs)</p>
-              <p className="text-2xl font-bold text-red-600">{summaryData.incorrectAnswers}</p>
+              <p className="text-2xl font-bold text-red-600">{mcqQuestions.length - summaryData.correctAnswers}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-500">Score (MCQs)</p>
@@ -105,28 +109,7 @@ export default function MockExamSummary() {
           </div>
           <div className="mt-8">
             <h3 className="text-lg font-semibold mb-4">Question Review</h3>
-            {summaryData.questions.map((question, index) => (
-              <div key={question.id} className="mb-6 p-4 border rounded-lg">
-                <p className="font-medium mb-2">Question {index + 1}: {question.content}</p>
-                {question.type === 'MCQ' && (
-                  <>
-                    <p className="text-sm">Your Answer: <span className={question.userAnswer === question.correctAnswer ? 'text-green-600' : 'text-red-600'}>{question.userAnswer}</span></p>
-                    <p className="text-sm">Correct Answer: <span className="text-green-600">{question.correctAnswer}</span></p>
-                  </>
-                )}
-                {question.type === 'LONG_FORM' && (
-                  <p className="text-sm">Your Answer: {question.userAnswer}</p>
-                )}
-                <div className="mt-2">
-                  <p className="text-sm font-medium">Explanation:</p>
-                  <p className="text-sm">{question.explanation}</p>
-                </div>
-                <div className="mt-2">
-                  <p className="text-sm font-medium">Simplified Explanation:</p>
-                  <p className="text-sm">{question.simplifiedExplanation}</p>
-                </div>
-              </div>
-            ))}
+            <DataTable columns={columns} data={summaryData.questions} />
           </div>
           <div className="mt-8 flex justify-between">
             <Link href="/mock-exam" passHref>

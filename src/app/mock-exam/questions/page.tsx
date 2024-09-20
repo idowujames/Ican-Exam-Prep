@@ -12,21 +12,32 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
 import { toast } from 'react-hot-toast';
 import debounce from 'lodash.debounce';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Question {
-    id: string;
-    type: 'MCQ' | 'LONG_FORM';
-    content: string;
-    options: string[] | null;
+  id: string;
+  type: 'MCQ' | 'LONG_FORM';
+  content: string;
+  options: string[] | null;
 }
 
 interface MockExamSession {
-    id: string;
-    questions: Question[];
-    currentQuestionIndex: number;
-    answers: { [questionId: string]: string };
-    startTime: number;
-    isFinished: boolean;
+  id: string;
+  questions: Question[];
+  currentQuestionIndex: number;
+  answers: { [questionId: string]: string };
+  startTime: number;
+  isFinished: boolean;
 }
 
 export default function MockExamQuestions() {
@@ -74,9 +85,9 @@ export default function MockExamQuestions() {
         if (!response.ok) throw new Error('Failed to start mock exam');
         const data = await response.json();
 
-                // Sort questions to put MCQs first
+        // Sort questions to put MCQs first
         const sortedQuestions = data.questions.sort((a: Question, b: Question) => 
-            a.type === 'MCQ' ? -1 : b.type === 'MCQ' ? 1 : 0
+          a.type === 'MCQ' ? -1 : b.type === 'MCQ' ? 1 : 0
         );
         
         setSession({
@@ -153,6 +164,10 @@ export default function MockExamQuestions() {
     }
   };
 
+  const handleQuit = () => {
+    router.push('/mock-exam');
+  };
+
   if (isLoading || !session) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -219,6 +234,25 @@ export default function MockExamQuestions() {
               <ArrowLeft className="mr-2 h-4 w-4" />
               Previous
             </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" className="bg-red-100 hover:bg-red-200">
+                  Quit
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you sure you want to quit?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Your progress will not be saved if you quit now.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleQuit}>Quit</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
             {session.currentQuestionIndex === session.questions.length - 1 ? (
               <Button 
                 onClick={finishMockExam} 

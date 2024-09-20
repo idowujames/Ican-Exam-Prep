@@ -35,11 +35,15 @@ export async function GET(request: Request) {
 
     const userAnswers = mockExam.answers as { [key: string]: string };
 
+    const mcqQuestions = questions.filter(q => q.type === 'MCQ');
+    const mcqCorrectAnswers = mcqQuestions.reduce((count, q) => 
+      userAnswers[q.id] === q.correctAnswer ? count + 1 : count, 0);
+
     const summaryData = {
-      totalQuestions: mockExam.totalQuestions,
-      correctAnswers: mockExam.correctAnswers,
-      incorrectAnswers: mockExam.totalQuestions - mockExam.correctAnswers,
-      score: mockExam.score,
+      totalQuestions: mcqQuestions.length,
+      correctAnswers: mcqCorrectAnswers,
+      incorrectAnswers: mcqQuestions.length - mcqCorrectAnswers,
+      score: (mcqCorrectAnswers / mcqQuestions.length) * 100,
       timeSpent: mockExam.timeSpent,
       questions: questions.map(q => ({
         id: q.id,
