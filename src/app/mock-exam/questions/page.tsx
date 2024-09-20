@@ -240,7 +240,7 @@ export default function MockExamQuestions() {
                   Quit
                 </Button>
               </AlertDialogTrigger>
-              <AlertDialogContent>
+              <AlertDialogContent className="bg-white">
                 <AlertDialogHeader>
                   <AlertDialogTitle>Are you sure you want to quit?</AlertDialogTitle>
                   <AlertDialogDescription>

@@ -22,6 +22,14 @@ export const columns: ColumnDef<Question>[] = [
     },
   },
   {
+    accessorKey: "type",
+    header: "Type",
+    cell: ({ row }) => {
+      const type = row.getValue("type") as string
+      return <div>{type}</div>
+    },
+  },
+  {
     accessorKey: "content",
     header: "Question",
     cell: ({ row }) => {
@@ -34,6 +42,16 @@ export const columns: ColumnDef<Question>[] = [
     header: "Status",
     cell: ({ row }) => {
       const question = row.original
+      if (question.type === 'LONG_FORM') {
+        return (
+          <Badge 
+            variant="outline"
+            className="bg-transparent text-gray-500 border-gray-300"
+          >
+            N/A
+          </Badge>
+        )
+      }
       const isCorrect = question.userAnswer === question.correctAnswer
       return (
         <Badge 

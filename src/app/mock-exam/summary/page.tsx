@@ -78,6 +78,12 @@ export default function MockExamSummary() {
 
   const mcqQuestions = summaryData.questions.filter(q => q.type === 'MCQ');
 
+  const sortedQuestions = summaryData.questions.sort((a, b) => {
+    if (a.type === 'MCQ' && b.type === 'LONG_FORM') return -1;
+    if (a.type === 'LONG_FORM' && b.type === 'MCQ') return 1;
+    return 0;
+  });
+
   return (
     <div className="container mx-auto min-h-screen p-4 md:p-6 bg-gradient-to-br from-gray-50 to-gray-100">
       <Card className="max-w-3xl mx-auto shadow-lg">
@@ -109,7 +115,7 @@ export default function MockExamSummary() {
           </div>
           <div className="mt-8">
             <h3 className="text-lg font-semibold mb-4">Question Review</h3>
-            <DataTable columns={columns} data={summaryData.questions} />
+            <DataTable columns={columns} data={sortedQuestions} />
           </div>
           <div className="mt-8 flex justify-between">
             <Link href="/mock-exam" passHref>
