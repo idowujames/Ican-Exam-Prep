@@ -10,6 +10,7 @@ import { Loader2 } from "lucide-react";
 import Link from 'next/link';
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./columns";
+import MarkdownRenderer from '@/components/ui/MarkdownRenderer';
 
 interface SummaryData {
   totalQuestions: number;
