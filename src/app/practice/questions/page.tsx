@@ -296,7 +296,7 @@ export default function PracticeQuestions() {
             </AlertDialog>
             {session.currentQuestionIndex === session.questions.length - 1 ? (
               <Button 
-                onClick={finishPracticeExam} 
+                onClick={finishPracticeSession}  // Update this line
                 disabled={session.isFinished || isSubmitting}
               >
                 Finish Practice
