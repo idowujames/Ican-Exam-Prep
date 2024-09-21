@@ -2,6 +2,7 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
+import MarkdownRenderer from '@/components/ui/MarkdownRenderer';
 
 export type Question = {
   id: string
@@ -21,14 +22,14 @@ export const columns: ColumnDef<Question>[] = [
       return <div className="text-center">{row.index + 1}</div>
     },
   },
-  {
-    accessorKey: "type",
-    header: "Type",
-    cell: ({ row }) => {
-      const type = row.getValue("type") as string
-      return <div>{type}</div>
-    },
-  },
+  // {
+  //   accessorKey: "type",
+  //   header: "Type",
+  //   cell: ({ row }) => {
+  //     const type = row.getValue("type") as string
+  //     return <div>{type}</div>
+  //   },
+  // },
   {
     accessorKey: "content",
     header: "Question",
