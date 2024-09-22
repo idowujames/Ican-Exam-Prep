@@ -1,5 +1,6 @@
 // app/practice/questions/page.tsx
 
+
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
@@ -9,9 +10,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, ArrowRight, Check, X, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, X, Loader2, Copy } from "lucide-react";
 import { toast } from 'react-hot-toast';
 import debounce from 'lodash.debounce';
+import clipboardCopy from 'clipboard-copy';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -96,6 +98,20 @@ export default function PracticeQuestions() {
     }, 300),
     []
   );
+
+  const copyQuestionToClipboard = () => {
+    if (session && currentQuestion) {
+      const questionText = `${currentQuestion.content}\n\nOptions:\n${currentQuestion.options.join('\n')}`;
+      clipboardCopy(questionText)
+        .then(() => {
+          toast.success('Question copied to clipboard');
+        })
+        .catch((err) => {
+          console.error('Failed to copy question:', err);
+          toast.error('Failed to copy question');
+        });
+    }
+  };
 
   const handleAnswerSelect = (answer: string) => {
     if (!session) return;
@@ -190,7 +206,17 @@ export default function PracticeQuestions() {
             <span className="text-sm font-medium text-gray-500">
               Question {session.currentQuestionIndex + 1} / {session.questions.length}
             </span>
-            <span className="text-sm font-medium text-gray-500">{currentQuestion.type}</span>
+            <div className="flex items-center">
+              <span className="text-sm font-medium text-gray-500 mr-2">{currentQuestion.type}</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={copyQuestionToClipboard}
+                title="Copy question to clipboard"
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
           <MarkdownRenderer content={currentQuestion.content} />
           <p className="mb-6"></p>
@@ -225,7 +251,7 @@ export default function PracticeQuestions() {
               </div>
             </RadioGroup>
           )}
-
+  
           {currentQuestion.type === 'LONG_FORM' && (
             <Textarea
               placeholder="Enter your answer here..."
@@ -235,7 +261,7 @@ export default function PracticeQuestions() {
               className="w-full p-2 border rounded"
             />
           )}
-
+  
           <div className="mt-6">
             {!isAnswerSubmitted ? (
               <Button onClick={handleSubmitAnswer} disabled={!userAnswer}>
@@ -247,7 +273,7 @@ export default function PracticeQuestions() {
               </Button>
             )}
           </div>
-
+  
           {showExplanation && (
             <div className="mt-4 p-4 bg-muted rounded-lg">
               <h4 className="font-semibold mb-2">Explanations:</h4>
@@ -271,7 +297,7 @@ export default function PracticeQuestions() {
               </div>
             </div>
           )}
-
+  
           <div className="flex justify-between mt-8">
             <Button variant="outline" onClick={handlePreviousQuestion} disabled={session.currentQuestionIndex === 0}>
               <ArrowLeft className="mr-2 h-4 w-4" />

@@ -28,6 +28,7 @@
     "@types/lodash.debounce": "^4.0.9",
     "bcrypt": "^5.1.1",
     "class-variance-authority": "^0.7.0",
+    "clipboard-copy": "^4.0.1",
     "clsx": "^2.1.1",
     "framer-motion": "^11.5.4",
     "lodash.debounce": "^4.0.8",
