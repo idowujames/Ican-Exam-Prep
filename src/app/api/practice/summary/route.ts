@@ -36,7 +36,7 @@ export async function GET(request: Request) {
           userId: user.id,
           courseId: practiceExam.courseId,
           activityType: 'Practice',
-          completedAt: practiceExam.completedAt,
+          completedAt: practiceExam.completedAt ? practiceExam.completedAt : undefined,
         },
       });
 
