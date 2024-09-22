@@ -31,17 +31,21 @@ export async function POST(request: Request) {
           id: true,
           type: true,
           content: true,
-          options: true,
+          optionA: true,
+          optionB: true,
+          optionC: true,
+          optionD: true,
+          optionE: true,
           correctAnswer: true,
           explanation: true,
           simplifiedExplanation: true,
         },
       });
 
-      // Parse the options JSON
-      const parsedQuestions = questions.map(q => ({
+      // Transform the questions to include options as an array
+      const transformedQuestions = questions.map(q => ({
         ...q,
-        options: q.options ? JSON.parse(q.options as string) : null
+        options: [q.optionA, q.optionB, q.optionC, q.optionD, q.optionE].filter(Boolean)
       }));
 
       // Create a new practice exam
@@ -57,7 +61,7 @@ export async function POST(request: Request) {
         },
       });
 
-      return { id: practiceExam.id, questions: parsedQuestions, totalQuestions: questions.length };
+      return { id: practiceExam.id, questions: transformedQuestions, totalQuestions: questions.length };
     });
 
     return NextResponse.json(result);

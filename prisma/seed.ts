@@ -57,12 +57,11 @@ async function main() {
       data: {
         type: QuestionType.MCQ,
         content: 'What is the primary purpose of financial accounting?',
-        options: JSON.stringify([
-          'To provide information for internal decision-making',
-          'To calculate taxes',
-          'To provide financial information to external users',
-          'To manage day-to-day operations'
-        ]),
+        optionA: 'To provide information for internal decision-making',
+        optionB: 'To calculate taxes',
+        optionC: 'To provide financial information to external users',
+        optionD: 'To manage day-to-day operations',
+        optionE: 'To forecast future economic trends',
         correctAnswer: 'To provide financial information to external users',
         explanation: 'Financial accounting primarily aims to provide financial information to external stakeholders such as investors, creditors, and regulators.',
         simplifiedExplanation: 'It\'s about showing the company\'s financial health to people outside the company.',

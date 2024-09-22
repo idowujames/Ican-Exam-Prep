@@ -1,3 +1,5 @@
+// app/api/mock-exam/start/route.ts
+
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
@@ -27,20 +29,27 @@ export async function POST(request: Request) {
           id: true,
           type: true,
           content: true,
-          options: true,
+          optionA: true,
+          optionB: true,
+          optionC: true,
+          optionD: true,
+          optionE: true,
+          correctAnswer: true,
+          explanation: true,
+          simplifiedExplanation: true,
         },
       });
 
-      // Randomly select 20 MCQs and 6 Long Form questions
-      const mcqs = allQuestions.filter(q => q.type === 'MCQ').sort(() => 0.5 - Math.random()).slice(0, 20);
-      const longForms = allQuestions.filter(q => q.type === 'LONG_FORM').sort(() => 0.5 - Math.random()).slice(0, 6);
-      const selectedQuestions = [...mcqs, ...longForms].sort(() => 0.5 - Math.random());
-
-      // Parse the options JSON
-      const parsedQuestions = selectedQuestions.map(q => ({
+      // Transform the questions to include options as an array
+      const transformedQuestions = allQuestions.map(q => ({
         ...q,
-        options: q.options ? JSON.parse(q.options as string) : null
+        options: [q.optionA, q.optionB, q.optionC, q.optionD, q.optionE].filter(Boolean)
       }));
+
+      // Randomly select 20 MCQs and 6 Long Form questions
+      const mcqs = transformedQuestions.filter(q => q.type === 'MCQ').sort(() => 0.5 - Math.random()).slice(0, 20);
+      const longForms = transformedQuestions.filter(q => q.type === 'LONG_FORM').sort(() => 0.5 - Math.random()).slice(0, 6);
+      const selectedQuestions = [...mcqs, ...longForms].sort(() => 0.5 - Math.random());
 
       // Create a new mock exam
       const mockExam = await prisma.mockExam.create({
@@ -54,7 +63,7 @@ export async function POST(request: Request) {
         },
       });
 
-      return { id: mockExam.id, questions: parsedQuestions };
+      return { id: mockExam.id, questions: selectedQuestions };
     });
 
     return NextResponse.json(result);

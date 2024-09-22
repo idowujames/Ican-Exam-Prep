@@ -1,4 +1,4 @@
-// src/app/mock-exam/questions/page.tsx
+// app/mock-exam/questions/page.tsx
 
 "use client";
 
@@ -25,12 +25,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import MarkdownRenderer from '@/components/ui/MarkdownRenderer';
 
-
 interface Question {
   id: string;
   type: 'MCQ' | 'LONG_FORM';
   content: string;
-  options: string[] | null;
+  options: string[];
 }
 
 interface MockExamSession {
@@ -206,7 +205,7 @@ export default function MockExamQuestions() {
           {currentQuestion.type === 'MCQ' && (
             <RadioGroup onValueChange={handleAnswerSelect} value={userAnswer}>
               <div className="space-y-4">
-                {currentQuestion.options?.map((option, index) => (
+                {currentQuestion.options.map((option, index) => (
                   <Label
                     key={index}
                     htmlFor={`option-${index}`}

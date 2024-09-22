@@ -42,7 +42,11 @@ model Question {
   id                    String       @id @default(uuid())
   type                  QuestionType
   content               String
-  options               Json?
+  optionA               String?
+  optionB               String?
+  optionC               String?
+  optionD               String?
+  optionE               String?
   correctAnswer         String
   explanation           String
   simplifiedExplanation String

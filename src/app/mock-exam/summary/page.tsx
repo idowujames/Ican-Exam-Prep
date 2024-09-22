@@ -1,4 +1,4 @@
-// src/app/mock-exam/summary/page.tsx
+// app/mock-exam/summary/page.tsx
 
 "use client";
 
@@ -22,6 +22,7 @@ interface SummaryData {
     id: string;
     type: 'MCQ' | 'LONG_FORM';
     content: string;
+    options: string[];
     userAnswer: string;
     correctAnswer: string;
     explanation: string;

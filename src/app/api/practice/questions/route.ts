@@ -1,4 +1,4 @@
-// src/app/api/practice/questions/route.ts
+// app/api/practice/questions/route.ts
 
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
@@ -22,22 +22,32 @@ export async function GET(request: Request) {
         id: true,
         type: true,
         content: true,
-        options: true,
+        optionA: true,
+        optionB: true,
+        optionC: true,
+        optionD: true,
+        optionE: true,
         correctAnswer: true,
         explanation: true,
         simplifiedExplanation: true,
       },
       orderBy: [
         {
-          type: 'asc', // This will put MCQs first as 'MCQ' comes before 'LONG_FORM' alphabetically
+          type: 'asc',
         },
         {
-          id: 'asc', // Secondary sort by id to ensure consistent ordering
+          id: 'asc',
         },
       ],
     });
 
-    return NextResponse.json(questions);
+    // Transform the questions to include options as an array
+    const transformedQuestions = questions.map(q => ({
+      ...q,
+      options: [q.optionA, q.optionB, q.optionC, q.optionD, q.optionE].filter(Boolean)
+    }));
+
+    return NextResponse.json(transformedQuestions);
   } catch (error) {
     console.error('Error fetching questions:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

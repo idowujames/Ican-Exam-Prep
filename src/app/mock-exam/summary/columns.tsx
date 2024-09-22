@@ -1,4 +1,5 @@
-// columns.tsx
+// app/mock-exam/summary/columns.tsx
+
 import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
@@ -8,6 +9,7 @@ export type Question = {
   id: string
   type: 'MCQ' | 'LONG_FORM'
   content: string
+  options: string[]
   userAnswer: string
   correctAnswer: string
   explanation: string
@@ -22,14 +24,6 @@ export const columns: ColumnDef<Question>[] = [
       return <div className="text-center">{row.index + 1}</div>
     },
   },
-  // {
-  //   accessorKey: "type",
-  //   header: "Type",
-  //   cell: ({ row }) => {
-  //     const type = row.getValue("type") as string
-  //     return <div>{type}</div>
-  //   },
-  // },
   {
     accessorKey: "content",
     header: "Question",

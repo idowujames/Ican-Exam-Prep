@@ -10,7 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, ArrowRight, Check, X, Loader2 } from "lucide-react";
-import { toast } from 'react-hot-toast'; // Add this import if you're using react-hot-toast for notifications
+import { toast } from 'react-hot-toast';
 import debounce from 'lodash.debounce';
 import {
   AlertDialog,
@@ -29,7 +29,7 @@ interface Question {
     id: string;
     type: 'MCQ' | 'LONG_FORM';
     content: string;
-    options: string[] | null;
+    options: string[];
     correctAnswer: string;
     explanation: string;
     simplifiedExplanation: string;
@@ -89,7 +89,7 @@ export default function PracticeQuestions() {
         });
       } catch (error) {
         console.error('Error starting practice session:', error);
-        toast.error('Failed to start practice session. Please try again.'); // Add user-friendly error notification
+        toast.error('Failed to start practice session. Please try again.');
       } finally {
         setIsLoading(false);
       }
@@ -160,7 +160,7 @@ export default function PracticeQuestions() {
       router.push(`/practice/summary?practiceExamId=${data.practiceExamId}`);
     } catch (error) {
       console.error('Error finishing practice session:', error);
-      toast.error('Failed to finish practice session. Please try again.'); // Add user-friendly error notification
+      toast.error('Failed to finish practice session. Please try again.');
     } finally {
       setIsLoading(false);
       setIsSubmitting(false);
@@ -198,7 +198,7 @@ export default function PracticeQuestions() {
           {currentQuestion.type === 'MCQ' && (
             <RadioGroup onValueChange={handleAnswerSelect} value={userAnswer}>
               <div className="space-y-4">
-                {currentQuestion.options?.map((option, index) => (
+                {currentQuestion.options.map((option, index) => (
                   <Label
                     key={index}
                     htmlFor={`option-${index}`}
@@ -298,7 +298,7 @@ export default function PracticeQuestions() {
             </AlertDialog>
             {session.currentQuestionIndex === session.questions.length - 1 ? (
               <Button 
-                onClick={finishPracticeSession}  // Update this line
+                onClick={finishPracticeSession}
                 disabled={session.isFinished || isSubmitting}
               >
                 Finish Practice
