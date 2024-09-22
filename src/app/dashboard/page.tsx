@@ -29,7 +29,7 @@ interface DashboardData {
 
 export default function Dashboard() {
   const router = useRouter();
-  const { user, isLoading, isAuthenticated } = useKindeBrowserClient();
+  const { isLoading, isAuthenticated } = useKindeBrowserClient();
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
 
   useEffect(() => {

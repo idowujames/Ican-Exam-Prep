@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BookOpen, ArrowLeft, Loader2 } from "lucide-react";
 import Link from 'next/link';
-import { toast } from 'react-hot-toast';
+// import { toast } from 'react-hot-toast';
 import debounce from 'lodash.debounce';
 
 interface Course {
@@ -24,7 +24,7 @@ interface ExamType {
 
 export default function MockExamSelection() {
   const router = useRouter();
-  const { user, isLoading, isAuthenticated } = useKindeBrowserClient();
+  const { isLoading, isAuthenticated } = useKindeBrowserClient();
   const [examTypes, setExamTypes] = useState<ExamType[]>([]);
 
   useEffect(() => {

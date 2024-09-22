@@ -10,7 +10,7 @@ import { Loader2 } from "lucide-react";
 import Link from 'next/link';
 import { DataTable } from "@/components/ui/data-table";
 import { columns } from "./columns";
-import MarkdownRenderer from '@/components/ui/MarkdownRenderer';
+// import MarkdownRenderer from '@/components/ui/MarkdownRenderer';
 
 interface SummaryData {
   totalQuestions: number;
@@ -31,7 +31,7 @@ interface SummaryData {
 }
 
 export default function MockExamSummary() {
-  const router = useRouter();
+  // const router = useRouter();
   const searchParams = useSearchParams();
   const mockExamId = searchParams.get('mockExamId');
 

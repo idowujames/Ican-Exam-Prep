@@ -31,7 +31,7 @@ interface ExamType {
 
 export default function PracticeSubjectSelection() {
   const router = useRouter();
-  const { user, isLoading, isAuthenticated } = useKindeBrowserClient();
+  const { isLoading, isAuthenticated } = useKindeBrowserClient();
   const [examTypes, setExamTypes] = useState<ExamType[]>([]);
   const [selectedDiets, setSelectedDiets] = useState<{[courseId: string]: string}>({});
 

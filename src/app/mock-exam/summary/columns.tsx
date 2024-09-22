@@ -3,7 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
-import MarkdownRenderer from '@/components/ui/MarkdownRenderer';
+// import MarkdownRenderer from '@/components/ui/MarkdownRenderer';
 
 export type Question = {
   id: string
