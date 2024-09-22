@@ -58,6 +58,8 @@ export default function PracticeQuestions() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [copySuccess, setCopySuccess] = useState(false);
+
   useEffect(() => {
     if (courseId && dietId) {
       startPracticeSession(courseId, dietId);
@@ -104,7 +106,8 @@ export default function PracticeQuestions() {
       const questionText = `${currentQuestion.content}\n\nOptions:\n${currentQuestion.options.join('\n')}`;
       clipboardCopy(questionText)
         .then(() => {
-          toast.success('Question copied to clipboard');
+          setCopySuccess(true);
+          setTimeout(() => setCopySuccess(false), 2000); // Reset after 2 seconds
         })
         .catch((err) => {
           console.error('Failed to copy question:', err);
@@ -212,9 +215,14 @@ export default function PracticeQuestions() {
                 variant="outline"
                 size="sm"
                 onClick={copyQuestionToClipboard}
-                title="Copy question to clipboard"
+                title={copySuccess ? "Copied!" : "Copy question to clipboard"}
+                className="transition-all duration-200"
               >
-                <Copy className="h-4 w-4" />
+                {copySuccess ? (
+                  <Check className="h-4 w-4 text-green-500" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
               </Button>
             </div>
           </div>
