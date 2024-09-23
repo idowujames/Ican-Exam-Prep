@@ -7,7 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Question } from '../../app/mock-exam/summary/columns';
 import MarkdownRenderer from './MarkdownRenderer';
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Check, X } from 'lucide-react'
+import { Check, X, Copy, ClipboardCheck } from 'lucide-react'
+import {useState } from 'react'
+
 interface QuestionDialogProps {
   question: Question | null
   isOpen: boolean
@@ -15,9 +17,29 @@ interface QuestionDialogProps {
 }
 
 export function QuestionDialog({ question, isOpen, onClose }: QuestionDialogProps) {
+  const [isCopied, setIsCopied] = useState(false)
+
   if (!question) return null
 
 //   const isCorrect = question.userAnswer === question.correctAnswer
+
+  const copyToClipboard = () => {
+    let clipboardContent = `Question: ${question.content}\n\n`
+    if (question.type === 'MCQ' && question.options) {
+      clipboardContent += "Options:\n"
+      question.options.forEach((option, index) => {
+        clipboardContent += `${index + 1}. ${option}\n`
+      })
+    }
+
+    navigator.clipboard.writeText(clipboardContent).then(() => {
+      setIsCopied(true)
+      setTimeout(() => setIsCopied(false), 2000)
+    }).catch(err => {
+      console.error('Failed to copy text: ', err)
+
+    })
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -26,13 +48,25 @@ export function QuestionDialog({ question, isOpen, onClose }: QuestionDialogProp
           <DialogTitle className="text-2xl font-bold">Question Review</DialogTitle>
           <DialogDescription>
             {question.type === 'MCQ' ? 'Multiple Choice Question' : 'Long Form Question'}
+            <Button
+                variant="outline"
+                size="sm"
+                className="absolute top-8 right-10"
+                onClick={copyToClipboard}
+              >
+                {isCopied ? (
+                  <ClipboardCheck className="h-4 w-4 mr-2" />
+                ) : (
+                  <Copy className="h-4 w-4 mr-2" />
+                )}
+                {isCopied ? "Copied!" : "Copy"}
+              </Button>
           </DialogDescription>
         </DialogHeader>
-        <ScrollArea className="h-[40vh] pr-4">
+        <ScrollArea className="h-[60vh] pr-4">
           <div className="space-y-6">
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <h3 className="font-semibold mb-2">Question:</h3>
-              <MarkdownRenderer content={question.content} />
+            <div className="p-4 bg-gray-50 rounded-lg relative">              
+                <MarkdownRenderer content={question.content} />
             </div>
             {question.type === 'MCQ' && (
               <div className="space-y-4">
