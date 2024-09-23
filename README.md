@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ICAN Exam Prep Application MVP
 
-## Getting Started
+## Overview
 
-First, run the development server:
+The ICAN Exam Prep Application is a web-based platform designed to help candidates prepare for the Institute of Chartered Accountants of Nigeria (ICAN) examinations. This MVP (Minimum Viable Product) version offers practice questions, mock exams, and progress tracking based on past ICAN examination papers.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+1. **User Authentication**
+   - Sign up and log in with email and password
+   - Secure authentication using Kinde Auth
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+2. **Dashboard**
+   - Personalized welcome message
+   - Quick statistics (total questions attempted, average score, study time this week, mock exams completed)
+   - Recent activity list
+   - Quick access buttons for Practice and Mock exam modes
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. **Practice Mode**
+   - Selection of exam type, course, and diet
+   - Multiple-Choice Questions (MCQs) and Long-Form Questions
+   - Immediate feedback on MCQs
+   - Explanation display with standard and simplified options
+   - Session summary upon completion
 
-## Learn More
+4. **Mock Exam Mode**
+   - Timed exam simulation
+   - Mix of MCQs and Long-Form Questions
+   - Comprehensive results summary
 
-To learn more about Next.js, take a look at the following resources:
+5. **Progress Tracking**
+   - Overall progress view
+   - Performance summary by subject // TODO: Implement
+   - Weak areas identification by subject // TODO: Implement
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+6. **Admin Interface** //TODO: Implement
+   - User management
+   - Exam and question management
+   - Bulk question import via CSV
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Technologies Used
 
-## Deploy on Vercel
+- Frontend: Next.js 14, TypeScript, Tailwind CSS
+- UI Components: shadcn/ui
+- Backend: Next.js API Routes
+- Database: PostgreSQL (via Supabase)
+- ORM: Prisma
+- Authentication: Kinde Auth
+- Deployment: Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Contributing
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+If you'd like to contribute to this project, please follow these steps:
+
+1. Fork the repository
+2. Create a new branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+
+## Acknowledgments
+
+- ICAN for providing the examination structure and content guidelines
+- The Next.js and Prisma communities for their excellent documentation and support
+
+## Contact
+
+For any queries or support, please contact [idowu_james@rocketmail.com](mailto:idowu_james@rocketmail.com).

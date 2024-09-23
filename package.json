@@ -29,6 +29,7 @@
     "@supabase/supabase-js": "^2.45.4",
     "@tanstack/react-table": "^8.20.5",
     "@types/lodash.debounce": "^4.0.9",
+    "@vercel/speed-insights": "^1.0.12",
     "bcrypt": "^5.1.1",
     "class-variance-authority": "^0.7.0",
     "clipboard-copy": "^4.0.1",
