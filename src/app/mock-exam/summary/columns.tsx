@@ -1,8 +1,9 @@
-// app/mock-exam/summary/columns.tsx
 import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { Eye } from "lucide-react"
+import { Binoculars } from 'lucide-react';
 
 export type Question = {
   id: string
@@ -20,7 +21,7 @@ export const createColumns = (viewQuestion: (question: Question) => void): Colum
     accessorKey: "id",
     header: "No.",
     cell: ({ row }) => {
-      return <div className="text-center">{row.index + 1}</div>
+      return <div className="text-center font-medium">{row.index + 1}</div>
     },
   },
   {
@@ -28,7 +29,7 @@ export const createColumns = (viewQuestion: (question: Question) => void): Colum
     header: "Question",
     cell: ({ row }) => {
       const content = row.getValue("content") as string
-      return <div className="max-w-[300px] truncate">{content}</div>
+      return <div className="max-w-[300px] truncate font-medium">{content}</div>
     },
   },
   {
@@ -40,9 +41,9 @@ export const createColumns = (viewQuestion: (question: Question) => void): Colum
         return (
           <Badge 
             variant="outline"
-            className="bg-transparent text-gray-500 border-gray-300"
+            className="bg-gray-100 text-gray-800 border-gray-300"
           >
-            N/A
+            Long Form
           </Badge>
         )
       }
@@ -51,8 +52,8 @@ export const createColumns = (viewQuestion: (question: Question) => void): Colum
         <Badge 
           variant={isCorrect ? "default" : "destructive"}
           className={cn(
-            isCorrect ? "bg-green-500 hover:bg-green-600" : "bg-red-500 hover:bg-red-600",
-            "text-white"
+            isCorrect ? "bg-green-100 text-green-800 border-green-300" : "bg-red-100 text-red-800 border-red-300",
+            "font-semibold"
           )}
         >
           {isCorrect ? "Correct" : "Incorrect"}
@@ -62,16 +63,18 @@ export const createColumns = (viewQuestion: (question: Question) => void): Colum
   },
   {
     accessorKey: "viewQuestion",
-    header: "View Question",
+    header: "View",
     cell: ({ row }) => {
       const question = row.original
       return (
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
           onClick={() => viewQuestion(question)}
+          className="hover:bg-gray-100"
         >
-          View Question
+          <Binoculars className="h-4 w-4 mr-2" />
+          View
         </Button>
       )
     },
