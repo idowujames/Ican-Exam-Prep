@@ -1,4 +1,4 @@
-// app/mock-exam/summary/page.tsx
+// src/app/mock-exam/summary/page.tsx
 
 "use client";
 
@@ -9,8 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import Link from 'next/link';
 import { DataTable } from "@/components/ui/data-table";
-import { columns } from "./columns";
-// import MarkdownRenderer from '@/components/ui/MarkdownRenderer';
+import { createColumns, Question } from "./columns";
+import { QuestionDialog } from "@/components/ui/QuestionDialog";
 
 interface SummaryData {
   totalQuestions: number;
@@ -18,25 +18,17 @@ interface SummaryData {
   incorrectAnswers: number;
   score: number;
   timeSpent: number;
-  questions: {
-    id: string;
-    type: 'MCQ' | 'LONG_FORM';
-    content: string;
-    options: string[];
-    userAnswer: string;
-    correctAnswer: string;
-    explanation: string;
-    simplifiedExplanation: string;
-  }[];
+  questions: Question[];
 }
 
 export default function MockExamSummary() {
-  // const router = useRouter();
   const searchParams = useSearchParams();
   const mockExamId = searchParams.get('mockExamId');
 
   const [summaryData, setSummaryData] = useState<SummaryData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
+  const [isQuestionDialogOpen, setIsQuestionDialogOpen] = useState(false);
 
   useEffect(() => {
     if (mockExamId) {
@@ -59,6 +51,15 @@ export default function MockExamSummary() {
     }
   };
 
+// In your page.tsx file
+const handleViewQuestion = (question: Question) => {
+  console.log('Viewing question:', question); // Add this line for debugging
+  setSelectedQuestion(question);
+  setIsQuestionDialogOpen(true);
+};
+
+  const columns = createColumns(handleViewQuestion);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -79,12 +80,6 @@ export default function MockExamSummary() {
   };
 
   const mcqQuestions = summaryData.questions.filter(q => q.type === 'MCQ');
-
-  const sortedQuestions = summaryData.questions.sort((a, b) => {
-    if (a.type === 'MCQ' && b.type === 'LONG_FORM') return -1;
-    if (a.type === 'LONG_FORM' && b.type === 'MCQ') return 1;
-    return 0;
-  });
 
   return (
     <div className="container mx-auto min-h-screen p-4 md:p-6 bg-gradient-to-br from-gray-50 to-gray-100">
@@ -117,7 +112,10 @@ export default function MockExamSummary() {
           </div>
           <div className="mt-8">
             <h3 className="text-lg font-semibold mb-4">Question Review</h3>
-            <DataTable columns={columns} data={sortedQuestions} />
+            <DataTable 
+              columns={columns} 
+              data={summaryData.questions}
+            />
           </div>
           <div className="mt-8 flex justify-between">
             <Link href="/mock-exam" passHref>
@@ -133,6 +131,11 @@ export default function MockExamSummary() {
           </div>
         </CardContent>
       </Card>
+      <QuestionDialog
+        question={selectedQuestion}
+        isOpen={isQuestionDialogOpen}
+        onClose={() => setIsQuestionDialogOpen(false)}
+      />
     </div>
   );
 }

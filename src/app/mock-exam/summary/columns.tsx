@@ -1,22 +1,21 @@
 // app/mock-exam/summary/columns.tsx
-
 import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-// import MarkdownRenderer from '@/components/ui/MarkdownRenderer';
 
 export type Question = {
   id: string
   type: 'MCQ' | 'LONG_FORM'
   content: string
-  options: string[]
   userAnswer: string
   correctAnswer: string
   explanation: string
   simplifiedExplanation: string
+  options: string[] | null
 }
 
-export const columns: ColumnDef<Question>[] = [
+export const createColumns = (viewQuestion: (question: Question) => void): ColumnDef<Question>[] => [
   {
     accessorKey: "id",
     header: "No.",
@@ -62,19 +61,19 @@ export const columns: ColumnDef<Question>[] = [
     },
   },
   {
-    accessorKey: "explanation",
-    header: "Explanation",
+    accessorKey: "viewQuestion",
+    header: "View Question",
     cell: ({ row }) => {
-      const explanation = row.getValue("explanation") as string
-      return <a href={explanation} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">View Explanation</a>
-    },
-  },
-  {
-    accessorKey: "simplifiedExplanation",
-    header: "Simplified Explanation",
-    cell: ({ row }) => {
-      const simplifiedExplanation = row.getValue("simplifiedExplanation") as string
-      return <a href={simplifiedExplanation} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">View Simplified Explanation</a>
+      const question = row.original
+      return (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => viewQuestion(question)}
+        >
+          View Question
+        </Button>
+      )
     },
   },
 ]

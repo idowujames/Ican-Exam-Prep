@@ -1,3 +1,4 @@
+// route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
@@ -33,7 +34,7 @@ export async function GET(request: Request) {
       },
     });
 
-    const userAnswers = mockExam.answers as { [key: string]: string };
+    const userAnswers = mockExam.answers as { [key: string]: string } || {};
 
     const mcqQuestions = questions.filter(q => q.type === 'MCQ');
     const mcqCorrectAnswers = mcqQuestions.reduce((count, q) => 
@@ -43,17 +44,24 @@ export async function GET(request: Request) {
       totalQuestions: mcqQuestions.length,
       correctAnswers: mcqCorrectAnswers,
       incorrectAnswers: mcqQuestions.length - mcqCorrectAnswers,
-      score: (mcqCorrectAnswers / mcqQuestions.length) * 100,
+      score: mcqQuestions.length > 0 ? (mcqCorrectAnswers / mcqQuestions.length) * 100 : 0,
       timeSpent: mockExam.timeSpent,
-      questions: questions.map(q => ({
-        id: q.id,
-        type: q.type,
-        content: q.content,
-        userAnswer: userAnswers[q.id] || '',
-        correctAnswer: q.correctAnswer,
-        explanation: q.explanation,
-        simplifiedExplanation: q.simplifiedExplanation,
-      })),
+      questions: questions.map(q => {
+        const options = ['A', 'B', 'C', 'D', 'E']
+          .map(letter => q[`option${letter}` as keyof typeof q] as string | undefined)
+          .filter(Boolean);
+        
+        return {
+          id: q.id,
+          type: q.type,
+          content: q.content,
+          userAnswer: userAnswers[q.id] || '',
+          correctAnswer: q.correctAnswer,
+          explanation: q.explanation,
+          simplifiedExplanation: q.simplifiedExplanation,
+          options: options.length > 0 ? options : null,
+        };
+      }),
     };
 
     return NextResponse.json(summaryData);
