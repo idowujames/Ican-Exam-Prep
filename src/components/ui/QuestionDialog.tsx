@@ -17,7 +17,7 @@ interface QuestionDialogProps {
 export function QuestionDialog({ question, isOpen, onClose }: QuestionDialogProps) {
   if (!question) return null
 
-  const isCorrect = question.userAnswer === question.correctAnswer
+//   const isCorrect = question.userAnswer === question.correctAnswer
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

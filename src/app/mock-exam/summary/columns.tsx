@@ -2,7 +2,6 @@ import { ColumnDef } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { Eye } from "lucide-react"
 import { Binoculars } from 'lucide-react';
 
 export type Question = {
