@@ -1,5 +1,3 @@
-// app/api/dashboard/route.ts
-
 import { NextResponse } from 'next/server';
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
 import prisma from '@/lib/prisma';
@@ -18,20 +16,24 @@ export async function GET() {
   }
 
   try {
-    // Fetch user progress data
-    const userProgress = await prisma.userProgress.findMany({
-      where: { userId: user.id },
-      include: {
-        course: true,
+    // Fetch mock exam data
+    const mockExams = await prisma.mockExam.findMany({
+      where: { 
+        userId: user.id,
+        completedAt: { not: null }, // Only completed exams
+      },
+      select: {
+        totalQuestions: true,
+        correctAnswers: true,
       },
     });
 
-    // Calculate dashboard data
-      const totalQuestionsAttempted = userProgress.reduce((sum, progress) => sum + progress.totalQuestions, 0);
-      const totalCorrectAnswers = userProgress.reduce((sum, progress) => sum + progress.totalCorrect, 0);
-      const averageScore = totalQuestionsAttempted > 0
-        ? (totalCorrectAnswers / totalQuestionsAttempted) * 100
-        : 0;
+    // Calculate mock exam statistics
+    const totalQuestionsAttempted = mockExams.reduce((sum, exam) => sum + exam.totalQuestions, 0);
+    const totalCorrectAnswers = mockExams.reduce((sum, exam) => sum + exam.correctAnswers, 0);
+    const averageScore = totalQuestionsAttempted > 0
+      ? (totalCorrectAnswers / totalQuestionsAttempted) * 100
+      : 0;
 
     // Fetch study time for the last week
     const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
@@ -54,16 +56,11 @@ export async function GET() {
     });
 
     // Count completed mock exams
-    const mockExamsCompleted = await prisma.mockExam.count({
-      where: {
-        userId: user.id,
-        completedAt: { not: null },
-      },
-    });
+    const mockExamsCompleted = mockExams.length;
 
     return NextResponse.json({
       totalQuestionsAttempted,
-      totalCorrectAnswers,  // Include this in the response
+      totalCorrectAnswers,
       averageScore,
       studyTimeThisWeek,
       mockExamsCompleted,
