@@ -85,9 +85,10 @@ model MockExam {
   correctAnswers Int
   timeSpent      Int
   totalQuestions Int
+  questionIds    String[]  // Add this line
   course         Course    @relation(fields: [courseId], references: [id])
   user           User      @relation(fields: [userId], references: [id])
-  answers        Json?     // Add this field to store user answers
+  answers        Json?
 
   @@unique([userId, courseId, startedAt])
 }

@@ -1,4 +1,3 @@
-// route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
@@ -30,7 +29,7 @@ export async function GET(request: Request) {
 
     const questions = await prisma.question.findMany({
       where: {
-        courseId: mockExam.courseId,
+        id: { in: mockExam.questionIds as string[] }, // Only fetch questions that were part of this mock exam
       },
     });
 

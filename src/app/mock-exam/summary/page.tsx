@@ -1,5 +1,3 @@
-// src/app/mock-exam/summary/page.tsx
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -42,6 +40,14 @@ export default function MockExamSummary() {
       const response = await fetch(`/api/mock-exam/summary?mockExamId=${mockExamId}`);
       if (!response.ok) throw new Error('Failed to fetch summary data');
       const data = await response.json();
+      
+      // Sort questions: MCQs first, then Long Form
+      data.questions.sort((a: Question, b: Question) => {
+        if (a.type === 'MCQ' && b.type !== 'MCQ') return -1;
+        if (a.type !== 'MCQ' && b.type === 'MCQ') return 1;
+        return 0;
+      });
+      
       setSummaryData(data);
     } catch (error) {
       console.error('Error fetching summary data:', error);
@@ -51,12 +57,10 @@ export default function MockExamSummary() {
     }
   };
 
-// In your page.tsx file
-const handleViewQuestion = (question: Question) => {
-  console.log('Viewing question:', question); // Add this line for debugging
-  setSelectedQuestion(question);
-  setIsQuestionDialogOpen(true);
-};
+  const handleViewQuestion = (question: Question) => {
+    setSelectedQuestion(question);
+    setIsQuestionDialogOpen(true);
+  };
 
   const columns = createColumns(handleViewQuestion);
 

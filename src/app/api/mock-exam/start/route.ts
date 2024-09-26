@@ -1,5 +1,3 @@
-// app/api/mock-exam/start/route.ts
-
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getKindeServerSession } from "@kinde-oss/kinde-auth-nextjs/server";
@@ -34,21 +32,12 @@ export async function POST(request: Request) {
           optionC: true,
           optionD: true,
           optionE: true,
-          correctAnswer: true,
-          explanation: true,
-          simplifiedExplanation: true,
         },
       });
 
-      // Transform the questions to include options as an array
-      const transformedQuestions = allQuestions.map(q => ({
-        ...q,
-        options: [q.optionA, q.optionB, q.optionC, q.optionD, q.optionE].filter(Boolean)
-      }));
-
       // Randomly select 20 MCQs and 6 Long Form questions
-      const mcqs = transformedQuestions.filter(q => q.type === 'MCQ').sort(() => 0.5 - Math.random()).slice(0, 20);
-      const longForms = transformedQuestions.filter(q => q.type === 'LONG_FORM').sort(() => 0.5 - Math.random()).slice(0, 6);
+      const mcqs = allQuestions.filter(q => q.type === 'MCQ').sort(() => 0.5 - Math.random()).slice(0, 20);
+      const longForms = allQuestions.filter(q => q.type === 'LONG_FORM').sort(() => 0.5 - Math.random()).slice(0, 6);
       const selectedQuestions = [...mcqs, ...longForms].sort(() => 0.5 - Math.random());
 
       // Create a new mock exam
@@ -60,10 +49,17 @@ export async function POST(request: Request) {
           correctAnswers: 0,
           timeSpent: 0,
           score: 0,
+          questionIds: selectedQuestions.map(q => q.id), // Store the IDs of selected questions
         },
       });
 
-      return { id: mockExam.id, questions: selectedQuestions };
+      // Transform the questions to include options as an array
+      const transformedQuestions = selectedQuestions.map(q => ({
+        ...q,
+        options: [q.optionA, q.optionB, q.optionC, q.optionD, q.optionE].filter(Boolean)
+      }));
+
+      return { id: mockExam.id, questions: transformedQuestions };
     });
 
     return NextResponse.json(result);
