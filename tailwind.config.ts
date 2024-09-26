@@ -9,6 +9,13 @@ const config: Config = {
   ],
   theme: {
   	extend: {
+		fontFamily: {
+			sans: ['var(--font-dm-sans)'],
+		  },
+		  fontWeight: {
+			normal: '500',
+			bold: '700',
+		  },
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
