@@ -104,7 +104,7 @@ export default function PracticeSubjectSelection() {
                       <SelectTrigger>
                         <SelectValue placeholder="Select exam diet" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="max-h-[250px] overflow-y-auto">
                         {course.diets.map(diet => (
                           <SelectItem key={diet.id} value={diet.id}>{diet.name}</SelectItem>
                         ))}
