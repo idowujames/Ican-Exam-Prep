@@ -1,16 +1,15 @@
-// app/dashboard/page.tsx
-
 "use client";
 
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Clock, FileText, User } from "lucide-react";
+import { BarChart, Clock, FileText, User, FastForward } from "lucide-react";
 import { useEffect, useState } from "react";
 import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
 import { Loader2 } from "lucide-react";
 import Link from 'next/link';
+import { Separator } from "@/components/ui/separator";
 
 interface DashboardData {
   totalQuestionsAttempted: number;
@@ -21,7 +20,7 @@ interface DashboardData {
   recentActivity: Array<{
     type: string;
     subject: string;
-    score: number | null;  // Change this to allow null
+    score: number | null;
     completedAt: string;
   }>;
   name: string;
@@ -142,8 +141,8 @@ export default function Dashboard() {
               <CardTitle>Recent Activity</CardTitle>
             </CardHeader>
             <CardContent>
-            {dashboardData.recentActivity && dashboardData.recentActivity.length > 0 ? (
-            <ul className="space-y-2">
+              {dashboardData.recentActivity && dashboardData.recentActivity.length > 0 ? (
+                <ul className="space-y-2">
                   {dashboardData.recentActivity.map((activity, index) => (
                     <li key={index} className="flex justify-between items-center">
                       <span>{activity.type}: {activity.subject}</span>
@@ -170,17 +169,40 @@ export default function Dashboard() {
             <CardHeader>
               <CardTitle>Quick Start</CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col space-y-4">
-              <Link href="/practice" passHref legacyBehavior>
-                <Button className="w-full" asChild>
-                  <a>Start Practice Mode</a>
-                </Button>
-              </Link>
-              <Link href="/mock-exam" passHref legacyBehavior>
-                <Button className="w-full" variant="outline" asChild>
-                  <a>Take Mock Exam</a>
-                </Button>
-              </Link>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <Link href="/practice" passHref legacyBehavior>
+                  <Button className="w-full" size="lg" asChild>
+                    <a><FileText className="mr-2 h-5 w-5" /> Practice</a>
+                  </Button>
+                </Link>
+                <Link href="/mock-exam" passHref legacyBehavior>
+                  <Button 
+                    className="w-full hover:bg-primary hover:text-primary-foreground" 
+                    size="lg" 
+                    variant="outline" 
+                    asChild
+                  >
+                    <a><FileText className="mr-2 h-5 w-5" /> Mock Exam</a>
+                  </Button>
+                </Link>
+              </div>
+              <Separator className="my-6" />
+              <div>
+                {/* <h4 className="text-sm font-semibold mb-4">Quick Sessions</h4> */}
+                <div className="grid grid-cols-2 gap-4">
+                  <Link href="/quick10" passHref legacyBehavior>
+                    <Button className="w-full" variant="secondary" asChild>
+                      <a><FastForward className="mr-2 h-4 w-4" /> Quick 10</a>
+                    </Button>
+                  </Link>
+                  <Link href="/quick4" passHref legacyBehavior>
+                    <Button className="w-full" variant="secondary" asChild>
+                      <a><FastForward className="mr-2 h-4 w-4" /> Quick 4</a>
+                    </Button>
+                  </Link>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>

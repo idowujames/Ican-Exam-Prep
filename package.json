@@ -24,6 +24,7 @@
     "@radix-ui/react-radio-group": "^1.2.0",
     "@radix-ui/react-scroll-area": "^1.1.0",
     "@radix-ui/react-select": "^2.1.1",
+    "@radix-ui/react-separator": "^1.1.0",
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-tabs": "^1.1.0",
     "@supabase/supabase-js": "^2.45.4",
@@ -46,6 +47,7 @@
     "react-markdown": "^9.0.1",
     "react-syntax-highlighter": "^15.5.0",
     "remark-gfm": "^4.0.0",
+    "separator": "^0.1.0",
     "supabase": "^1.192.5",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7"
