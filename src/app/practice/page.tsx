@@ -1,5 +1,3 @@
-// /app/practice/page.tsx
-
 "use client";
 
 import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
