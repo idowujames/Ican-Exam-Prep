@@ -28,9 +28,27 @@ export async function GET() {
       },
     });
 
-    // Calculate mock exam statistics
-    const totalQuestionsAttempted = mockExams.reduce((sum, exam) => sum + exam.totalQuestions, 0);
-    const totalCorrectAnswers = mockExams.reduce((sum, exam) => sum + exam.correctAnswers, 0);
+    // Fetch practice exam data
+    const practiceExams = await prisma.practiceExam.findMany({
+      where: {
+        userId: user.id,
+        completedAt: { not: null }, // Only completed exams
+      },
+      select: {
+        totalQuestions: true,
+        correctAnswers: true,
+      },
+    });
+
+    // Calculate combined statistics
+    const totalQuestionsAttempted = 
+      mockExams.reduce((sum, exam) => sum + exam.totalQuestions, 0) +
+      practiceExams.reduce((sum, exam) => sum + exam.totalQuestions, 0);
+
+    const totalCorrectAnswers = 
+      mockExams.reduce((sum, exam) => sum + exam.correctAnswers, 0) +
+      practiceExams.reduce((sum, exam) => sum + exam.correctAnswers, 0);
+
     const averageScore = totalQuestionsAttempted > 0
       ? (totalCorrectAnswers / totalQuestionsAttempted) * 100
       : 0;
