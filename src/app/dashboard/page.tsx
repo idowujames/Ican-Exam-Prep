@@ -65,17 +65,6 @@ export default function Dashboard() {
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div className="flex items-center">
-            {/* <img
-              alt="ICAN Logo"
-              className="h-8 w-auto mr-2"
-              height="32"
-              src="/placeholder.svg"
-              style={{
-                aspectRatio: "32/32",
-                objectFit: "cover",
-              }}
-              width="32"
-            /> */}
             <h1 className="text-xl font-semibold text-gray-900">ICAN Exam Prep</h1>
           </div>
           <nav className="flex items-center space-x-4">
@@ -189,7 +178,6 @@ export default function Dashboard() {
               </div>
               <Separator className="my-6" />
               <div>
-                {/* <h4 className="text-sm font-semibold mb-4">Quick Sessions</h4> */}
                 <div className="grid grid-cols-2 gap-4">
                   <Link href="/quick10" passHref legacyBehavior>
                     <Button className="w-full" variant="secondary" asChild>

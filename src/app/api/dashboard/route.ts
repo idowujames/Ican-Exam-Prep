@@ -16,31 +16,43 @@ export async function GET() {
   }
 
   try {
-    // Fetch mock exam data
-    const mockExams = await prisma.mockExam.findMany({
-      where: { 
-        userId: user.id,
-        completedAt: { not: null }, // Only completed exams
-      },
-      select: {
-        totalQuestions: true,
-        correctAnswers: true,
-      },
-    });
+    const [mockExams, practiceExams, studySessions, recentActivity] = await Promise.all([
+      prisma.mockExam.findMany({
+        where: { 
+          userId: user.id,
+          completedAt: { not: null },
+        },
+        select: {
+          totalQuestions: true,
+          correctAnswers: true,
+        },
+      }),
+      prisma.practiceExam.findMany({
+        where: {
+          userId: user.id,
+          completedAt: { not: null },
+        },
+        select: {
+          totalQuestions: true,
+          correctAnswers: true,
+        },
+      }),
+      prisma.studySession.findMany({
+        where: {
+          userId: user.id,
+          startedAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+        },
+      }),
+      prisma.recentActivity.findMany({
+        where: { userId: user.id },
+        orderBy: { completedAt: 'desc' },
+        take: 5,
+        include: {
+          course: true,
+        },
+      }),
+    ]);
 
-    // Fetch practice exam data
-    const practiceExams = await prisma.practiceExam.findMany({
-      where: {
-        userId: user.id,
-        completedAt: { not: null }, // Only completed exams
-      },
-      select: {
-        totalQuestions: true,
-        correctAnswers: true,
-      },
-    });
-
-    // Calculate combined statistics
     const totalQuestionsAttempted = 
       mockExams.reduce((sum, exam) => sum + exam.totalQuestions, 0) +
       practiceExams.reduce((sum, exam) => sum + exam.totalQuestions, 0);
@@ -53,41 +65,50 @@ export async function GET() {
       ? (totalCorrectAnswers / totalQuestionsAttempted) * 100
       : 0;
 
-    // Fetch study time for the last week
-    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    const studySessions = await prisma.studySession.findMany({
-      where: {
-        userId: user.id,
-        startedAt: { gte: oneWeekAgo },
-      },
-    });
     const studyTimeThisWeek = studySessions.reduce((sum, session) => sum + (session.duration || 0), 0);
 
-    // Fetch recent activity
-    const recentActivity = await prisma.recentActivity.findMany({
-      where: { userId: user.id },
-      orderBy: { completedAt: 'desc' },
-      take: 5,
-      include: {
-        course: true,
-      },
-    });
+    const enrichedRecentActivity = await Promise.all(recentActivity.map(async (activity) => {
+      if (activity.activityType === 'Practice') {
+        const practiceExam = await prisma.practiceExam.findFirst({
+          where: {
+            userId: user.id,
+            courseId: activity.courseId,
+            completedAt: {
+              gte: new Date(activity.completedAt.getTime() - 5000),
+              lte: new Date(activity.completedAt.getTime() + 5000),
+            },
+          },
+          include: {
+            diet: true,
+          },
+        });
 
-    // Count completed mock exams
-    const mockExamsCompleted = mockExams.length;
+        const subject = practiceExam && practiceExam.diet
+          ? practiceExam.diet.name
+          : 'Unknown Diet';
+
+        return {
+          type: `Practice: ${subject}`,
+          score: activity.score,
+          completedAt: activity.completedAt,
+        };
+      } else {
+        return {
+          type: activity.activityType,
+          subject: activity.course.name,
+          score: activity.score,
+          completedAt: activity.completedAt,
+        };
+      }
+    }));
 
     return NextResponse.json({
       totalQuestionsAttempted,
       totalCorrectAnswers,
       averageScore,
       studyTimeThisWeek,
-      mockExamsCompleted,
-      recentActivity: recentActivity.map(activity => ({
-        type: activity.activityType,
-        subject: activity.course.name,
-        score: activity.score,
-        completedAt: activity.completedAt,
-      })),
+      mockExamsCompleted: mockExams.length,
+      recentActivity: enrichedRecentActivity,
       name: user.given_name,
     });
 
