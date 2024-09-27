@@ -65,7 +65,7 @@ export default function Dashboard() {
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div className="flex items-center">
-            <img
+            {/* <img
               alt="ICAN Logo"
               className="h-8 w-auto mr-2"
               height="32"
@@ -75,7 +75,7 @@ export default function Dashboard() {
                 objectFit: "cover",
               }}
               width="32"
-            />
+            /> */}
             <h1 className="text-xl font-semibold text-gray-900">ICAN Exam Prep</h1>
           </div>
           <nav className="flex items-center space-x-4">
