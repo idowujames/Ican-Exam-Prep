@@ -56,7 +56,7 @@ export default function Quick10Summary() {
         body: JSON.stringify({ courseId: summaryData.courseId }),
       });
       if (!response.ok) throw new Error('Failed to start new Quick 10 session');
-      const data = await response.json();
+      // const data = await response.json();
       router.push(`/quick10/questions?courseId=${summaryData.courseId}`);
     } catch (error) {
       console.error('Error starting new Quick 10 session:', error);
