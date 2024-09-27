@@ -266,7 +266,7 @@ export default function Quick10Questions() {
           </RadioGroup>
   
           <div className="mt-6 space-y-4">
-            <div className="flex justify-center space-x-28">
+            <div className="flex justify-center space-x-2">
               <Button 
                 variant="outline" 
                 onClick={handlePreviousQuestion} 
