@@ -21,7 +21,7 @@ interface DashboardData {
   recentActivity: Array<{
     type: string;
     subject: string;
-    score: number;
+    score: number | null;  // Change this to allow null
     completedAt: string;
   }>;
   name: string;
@@ -142,18 +142,22 @@ export default function Dashboard() {
               <CardTitle>Recent Activity</CardTitle>
             </CardHeader>
             <CardContent>
-              {dashboardData.recentActivity && dashboardData.recentActivity.length > 0 ? (
-                <ul className="space-y-2">
+            {dashboardData.recentActivity && dashboardData.recentActivity.length > 0 ? (
+            <ul className="space-y-2">
                   {dashboardData.recentActivity.map((activity, index) => (
                     <li key={index} className="flex justify-between items-center">
                       <span>{activity.type}: {activity.subject}</span>
-                      <span className={`font-semibold ${
-                        activity.score >= 70 ? 'text-green-600' : 
-                        activity.score >= 50 ? 'text-yellow-600' : 
-                        'text-red-600'
-                      }`}>
-                        {activity.score.toFixed(2)}%
-                      </span>
+                      {activity.score !== null ? (
+                        <span className={`font-semibold ${
+                          activity.score >= 70 ? 'text-green-600' : 
+                          activity.score >= 50 ? 'text-yellow-600' : 
+                          'text-red-600'
+                        }`}>
+                          {activity.score.toFixed(2)}%
+                        </span>
+                      ) : (
+                        <span className="font-semibold text-blue-600">Completed</span>
+                      )}
                     </li>
                   ))}
                 </ul>

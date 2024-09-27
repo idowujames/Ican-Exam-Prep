@@ -27,6 +27,8 @@ model Course {
   RecentActivity RecentActivity[]
   studySessions  StudySession[]
   userProgress   UserProgress[]
+  quick10Sessions Quick10Session[]
+  quick4Sessions  Quick4Session[]
 }
 
 model Diet {
@@ -106,6 +108,38 @@ model User {
   recentActivity RecentActivity[]
   studySessions  StudySession[]
   userProgress   UserProgress[]
+  quick10Sessions Quick10Session[]
+  quick4Sessions  Quick4Session[]
+}
+
+model Quick10Session {
+  id             String    @id @default(uuid())
+  userId         String
+  courseId       String
+  startedAt      DateTime  @default(now())
+  completedAt    DateTime?
+  correctAnswers Int       @default(0)
+  timeSpent      Int       @default(0)
+  questionIds    String[]
+  answers        Json?
+  user           User      @relation(fields: [userId], references: [id])
+  course         Course    @relation(fields: [courseId], references: [id])
+
+  @@unique([userId, courseId, startedAt])
+}
+
+model Quick4Session {
+  id            String    @id @default(uuid())
+  userId        String
+  courseId      String
+  startedAt     DateTime  @default(now())
+  completedAt   DateTime?
+  timeSpent     Int       @default(0)
+  questionIds   String[]
+  user          User      @relation(fields: [userId], references: [id])
+  course        Course    @relation(fields: [courseId], references: [id])
+
+  @@unique([userId, courseId, startedAt])
 }
 
 model StudySession {
