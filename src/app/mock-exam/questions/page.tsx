@@ -5,13 +5,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, ArrowRight, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Loader2, Copy, LogOut } from "lucide-react";
 import { toast } from 'react-hot-toast';
 import debounce from 'lodash.debounce';
+import clipboardCopy from 'clipboard-copy';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -50,6 +51,7 @@ export default function MockExamQuestions() {
   const [timeRemaining, setTimeRemaining] = useState<number>(3 * 60 * 60 + 30 * 60); // 3h30m in seconds
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
 
   useEffect(() => {
     if (courseId) {
@@ -108,6 +110,21 @@ export default function MockExamQuestions() {
     }, 300),
     []
   );
+
+  const copyQuestionToClipboard = () => {
+    if (session && currentQuestion) {
+      const questionText = `${currentQuestion.content}\n\nOptions:\n${currentQuestion.options.join('\n')}`;
+      clipboardCopy(questionText)
+        .then(() => {
+          setCopySuccess(true);
+          setTimeout(() => setCopySuccess(false), 2000);
+        })
+        .catch((err) => {
+          console.error('Failed to copy question:', err);
+          toast.error('Failed to copy question');
+        });
+    }
+  };
 
   const handleAnswerSelect = (answer: string) => {
     if (!session) return;
@@ -189,57 +206,17 @@ export default function MockExamQuestions() {
 
   return (
     <div className="container mx-auto min-h-screen p-4 md:p-6 bg-gradient-to-br from-gray-50 to-gray-100">
-      <Card className="max-w-3xl mx-auto shadow-lg">
-        <CardContent className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <span className="text-sm font-medium text-gray-500">
-              Question {session.currentQuestionIndex + 1} / {session.questions.length}
-            </span>
+      <Card className="max-w-4xl mx-auto shadow-lg">
+        <CardHeader className="flex flex-row items-center justify-between bg-muted p-4">
+          <span className="text-lg font-semibold text-foreground">Mock Exam</span>
+          <div className="flex items-center space-x-4">
             <span className={`text-sm font-medium ${timeRemaining <= 300 ? 'text-red-500' : 'text-gray-500'}`}>
               Time Remaining: {formatTime(timeRemaining)}
             </span>
-          </div>
-          <MarkdownRenderer content={currentQuestion.content} />
-          <p className="mb-6"></p>
-          
-          {currentQuestion.type === 'MCQ' && (
-            <RadioGroup onValueChange={handleAnswerSelect} value={userAnswer}>
-              <div className="space-y-4">
-                {currentQuestion.options.map((option, index) => (
-                  <Label
-                    key={index}
-                    htmlFor={`option-${index}`}
-                    className={`flex items-center p-4 border rounded-lg ${
-                      userAnswer === option ? 'bg-muted' : ''
-                    }`}
-                  >
-                    <RadioGroupItem value={option} id={`option-${index}`} className="mr-3" />
-                    {option}
-                  </Label>
-                ))}
-              </div>
-            </RadioGroup>
-          )}
-
-          {currentQuestion.type === 'LONG_FORM' && (
-            <Textarea
-              placeholder="Enter your answer here..."
-              value={userAnswer || ''}
-              onChange={(e) => handleAnswerSelect(e.target.value)}
-              rows={6}
-              className="w-full p-2 border rounded"
-            />
-          )}
-
-          <div className="flex justify-between mt-8">
-            <Button variant="outline" onClick={handlePreviousQuestion} disabled={session.currentQuestionIndex === 0}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Previous
-            </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="outline" className="bg-red-100 hover:bg-red-200">
-                  Quit
+                <Button variant="ghost" size="icon" className="text-muted-foreground hover:bg-muted/90 rounded-full">
+                  <LogOut className="h-5 w-5" />
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent className="bg-white">
@@ -255,19 +232,86 @@ export default function MockExamQuestions() {
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
-            {session.currentQuestionIndex === session.questions.length - 1 ? (
+          </div>
+        </CardHeader>
+        <CardContent className="p-6">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-sm font-medium text-muted-foreground">
+              Question {session.currentQuestionIndex + 1} / {session.questions.length}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={copyQuestionToClipboard}
+              title={copySuccess ? "Copied!" : "Copy question to clipboard"}
+              className="transition-all duration-200 rounded-full"
+            >
+              {copySuccess ? (
+                <span className="text-green-500">Copied!</span>
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+          <MarkdownRenderer content={currentQuestion.content} />
+          <p className="mb-6"></p>
+          
+          {currentQuestion.type === 'MCQ' ? (
+            <RadioGroup onValueChange={handleAnswerSelect} value={userAnswer}>
+              <div className="space-y-4">
+                {currentQuestion.options.map((option, index) => (
+                  <Label
+                    key={index}
+                    htmlFor={`option-${index}`}
+                    className={`flex items-center p-4 border rounded-lg transition-colors duration-200 ${
+                      userAnswer === option ? 'bg-muted' : 'hover:bg-muted/50'
+                    }`}
+                  >
+                    <RadioGroupItem value={option} id={`option-${index}`} className="mr-3" />
+                    {option}
+                  </Label>
+                ))}
+              </div>
+            </RadioGroup>
+          ) : (
+            <Textarea
+              placeholder="Enter your answer here..."
+              value={userAnswer || ''}
+              onChange={(e) => handleAnswerSelect(e.target.value)}
+              rows={6}
+              className="w-full p-2 border rounded"
+            />
+          )}
+  
+          <div className="mt-6 space-y-4">
+            <div className="flex justify-center space-x-4">
               <Button 
-                onClick={finishMockExam} 
-                disabled={session.isFinished || isSubmitting}
+                variant="outline" 
+                onClick={handlePreviousQuestion} 
+                disabled={session.currentQuestionIndex === 0}
+                className="px-4 py-2 rounded-full transition-all duration-200 hover:bg-primary hover:text-primary-foreground"
               >
-                Finish Exam
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Previous
               </Button>
-            ) : (
-              <Button onClick={handleNextQuestion}>
-                Next
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            )}
+              {session.currentQuestionIndex === session.questions.length - 1 ? (
+                <Button 
+                  onClick={finishMockExam} 
+                  disabled={session.isFinished || isSubmitting}
+                  className="px-4 py-2 rounded-full transition-all duration-200 bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  Finish Exam
+                </Button>
+              ) : (
+                <Button 
+                  onClick={handleNextQuestion}
+                  className="px-4 py-2 rounded-full transition-all duration-200 bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  Next
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
