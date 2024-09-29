@@ -25,6 +25,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import MarkdownRenderer from '@/components/ui/MarkdownRenderer';
+import { TransitionPage } from '@/components/TransitionPage';
 
 interface Question {
   id: string;
@@ -52,6 +53,7 @@ export default function MockExamQuestions() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [showTransition, setShowTransition] = useState(false);
 
   useEffect(() => {
     if (courseId) {
@@ -140,10 +142,20 @@ export default function MockExamQuestions() {
   const handleNextQuestion = () => {
     if (!session) return;
     if (session.currentQuestionIndex < session.questions.length - 1) {
-      setSession(prev => ({
-        ...prev!,
-        currentQuestionIndex: prev!.currentQuestionIndex + 1
-      }));
+      const nextIndex = session.currentQuestionIndex + 1;
+      const currentType = session.questions[session.currentQuestionIndex].type;
+      const nextType = session.questions[nextIndex].type;
+      
+      if (currentType === 'MCQ' && nextType === 'LONG_FORM') {
+        setShowTransition(true);
+      } else {
+        setSession(prev => ({
+          ...prev!,
+          currentQuestionIndex: nextIndex
+        }));
+      }
+    } else {
+      finishMockExam();
     }
   };
 
@@ -152,6 +164,14 @@ export default function MockExamQuestions() {
     setSession(prev => ({
       ...prev!,
       currentQuestionIndex: prev!.currentQuestionIndex - 1
+    }));
+  };
+
+  const handleContinueToLongForm = () => {
+    setShowTransition(false);
+    setSession(prev => ({
+      ...prev!,
+      currentQuestionIndex: prev!.currentQuestionIndex + 1
     }));
   };
 
@@ -186,6 +206,19 @@ export default function MockExamQuestions() {
     router.push('/mock-exam');
   };
 
+  const getCurrentQuestionNumber = useCallback(() => {
+    if (!session) return { current: 0, total: 0 };
+    
+    const currentType = session.questions[session.currentQuestionIndex].type;
+    const questionsOfCurrentType = session.questions.filter(q => q.type === currentType);
+    const currentTypeIndex = questionsOfCurrentType.findIndex(q => q.id === session.questions[session.currentQuestionIndex].id);
+    
+    return {
+      current: currentTypeIndex + 1,
+      total: questionsOfCurrentType.length
+    };
+  }, [session]);
+
   if (isLoading || !session) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -194,8 +227,13 @@ export default function MockExamQuestions() {
     );
   }
 
+  if (showTransition) {
+    return <TransitionPage onContinue={handleContinueToLongForm} />;
+  }
+
   const currentQuestion = session.questions[session.currentQuestionIndex];
   const userAnswer = session.answers[currentQuestion.id];
+  const { current, total } = getCurrentQuestionNumber();
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -237,7 +275,7 @@ export default function MockExamQuestions() {
         <CardContent className="p-6">
           <div className="flex justify-between items-center mb-4">
             <span className="text-sm font-medium text-muted-foreground">
-              Question {session.currentQuestionIndex + 1} / {session.questions.length}
+              Question {current} / {total}
             </span>
             <Button
               variant="outline"

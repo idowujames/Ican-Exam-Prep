@@ -1,50 +1,50 @@
-"use client";
+"use client"
 
-import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs";
-import { useRouter } from 'next/navigation';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Clock, FileText, User, FastForward } from "lucide-react";
-import { useEffect, useState } from "react";
-import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components";
-import { Loader2 } from "lucide-react";
-import Link from 'next/link';
-import { Separator } from "@/components/ui/separator";
+import { useKindeBrowserClient } from "@kinde-oss/kinde-auth-nextjs"
+import { useRouter } from 'next/navigation'
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { BarChart, Clock, FileText, User, FastForward } from "lucide-react"
+import { useEffect, useState } from "react"
+import { LogoutLink } from "@kinde-oss/kinde-auth-nextjs/components"
+import { Loader2 } from "lucide-react"
+import Link from 'next/link'
+import { Separator } from "@/components/ui/separator"
 
 interface DashboardData {
-  totalQuestionsAttempted: number;
-  totalCorrectAnswers: number;
-  averageScore: number;
-  studyTimeThisWeek: number;
-  mockExamsCompleted: number;
+  totalQuestionsAttempted: number
+  totalCorrectAnswers: number
+  averageScore: number
+  studyTimeThisWeek: number
+  mockExamsCompleted: number
   recentActivity: Array<{
-    type: string;
-    subject: string;
-    score: number | null;
-    completedAt: string;
-  }>;
-  name: string;
+    type: string
+    subject: string
+    score: number | null
+    completedAt: string
+  }>
+  name: string
 }
 
 export default function Dashboard() {
-  const router = useRouter();
-  const { isLoading, isAuthenticated } = useKindeBrowserClient();
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const router = useRouter()
+  const { isLoading, isAuthenticated } = useKindeBrowserClient()
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      router.push('/login');
+      router.push('/login')
     }
-  }, [isLoading, isAuthenticated, router]);
+  }, [isLoading, isAuthenticated, router])
 
   useEffect(() => {
     if (isAuthenticated) {
       fetch('/api/dashboard')
         .then(response => response.json())
         .then(data => setDashboardData(data))
-        .catch(error => console.error('Error fetching dashboard data:', error));
+        .catch(error => console.error('Error fetching dashboard data:', error))
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated])
 
   if (isLoading || !dashboardData) {
     return (
@@ -55,37 +55,42 @@ export default function Dashboard() {
   }
 
   const formatTime = (minutes: number) => {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return `${hours}h ${mins}m`;
-  };
+    const hours = Math.floor(minutes / 60)
+    const mins = minutes % 60
+    return `${hours}h ${mins}m`
+  }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-100">
       <header className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
           <div className="flex items-center">
-            <h1 className="text-xl font-semibold text-gray-900">ICAN Exam Prep</h1>
+            <h1 className="text-2xl font-bold text-gray-900">ICAN Exam Prep</h1>
           </div>
           <nav className="flex items-center space-x-4">
-            <Link href="#" className="text-gray-500 hover:text-gray-700">
+            <Link href="#" className="text-sm font-medium text-gray-700 hover:text-gray-900">
               Profile
             </Link>
-            <a className="text-gray-500 hover:text-gray-700" href="#">
+            <Link href="#" className="text-sm font-medium text-gray-700 hover:text-gray-900">
               Settings
-            </a>
+            </Link>
             <LogoutLink>
-              <Button variant="outline">Log out</Button>
+              <Button variant="outline" size="sm">Log out</Button>
             </LogoutLink>
           </nav>
         </div>
       </header>
       <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Welcome back, {dashboardData.name || 'User'}!</h2>
+        <h2 className="text-3xl font-bold text-gray-900 mb-6">Welcome back, {dashboardData.name || 'User'}!</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Questions Attempted</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">Total Questions Attempted</CardTitle>
               <FileText className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -94,7 +99,7 @@ export default function Dashboard() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Average Score</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">Average Score</CardTitle>
               <BarChart className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -107,7 +112,7 @@ export default function Dashboard() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Study Time This Week</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">Study Time This Week</CardTitle>
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -116,7 +121,7 @@ export default function Dashboard() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Mock Exams Completed</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">Mock Exams Completed</CardTitle>
               <User className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -127,36 +132,39 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <Card>
             <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
+              <CardTitle className="text-xl font-semibold">Recent Activity</CardTitle>
             </CardHeader>
             <CardContent>
               {dashboardData.recentActivity && dashboardData.recentActivity.length > 0 ? (
-                <ul className="space-y-2">
+                <ul className="space-y-3 max-h-[150px] overflow-y-auto pr-2 custom-scrollbar">
                   {dashboardData.recentActivity.map((activity, index) => (
-                    <li key={index} className="flex justify-between items-center">
-                      <span>{activity.type}: {activity.subject}</span>
-                      {activity.score !== null ? (
-                        <span className={`font-semibold ${
-                          activity.score >= 70 ? 'text-green-600' : 
-                          activity.score >= 50 ? 'text-yellow-600' : 
-                          'text-red-600'
-                        }`}>
-                          {activity.score.toFixed(2)}%
-                        </span>
-                      ) : (
-                        <span className="font-semibold text-blue-600">Completed</span>
-                      )}
+                    <li key={index} className="flex flex-col py-2 border-b border-gray-200 last:border-b-0">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-700">{activity.type}: {activity.subject}</span>
+                        {activity.score !== null ? (
+                          <span className={`text-sm font-semibold px-2 py-1 rounded-full ${
+                            activity.score >= 70 ? 'bg-green-100 text-green-800 border border-green-300' : 
+                            activity.score >= 50 ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' : 
+                            'bg-red-100 text-red-800 border border-red-300'
+                          }`}>
+                            {activity.score.toFixed(2)}%
+                          </span>
+                        ) : (
+                          <span className="text-sm font-semibold text-blue-600 px-2 py-1 bg-blue-100 rounded-full border border-blue-300">Completed</span>
+                        )}
+                      </div>
+                      <span className="text-xs text-gray-500 mt-1">{formatDate(activity.completedAt)}</span>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p>No recent activity.</p>
+                <p className="text-sm text-gray-600">No recent activity.</p>
               )}
             </CardContent>
           </Card>
           <Card>
             <CardHeader>
-              <CardTitle>Quick Start</CardTitle>
+              <CardTitle className="text-xl font-semibold">Quick Start</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
@@ -196,5 +204,5 @@ export default function Dashboard() {
         </div>
       </main>
     </div>
-  );
+  )
 }
