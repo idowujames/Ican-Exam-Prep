@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { CheckCircle, ArrowRight, BookOpen } from "lucide-react"
+import { ArrowRight, BookOpen } from "lucide-react"
 
 interface TransitionPageProps {
   onContinue: () => void
