@@ -286,7 +286,7 @@ export default function PracticeQuestions() {
           )}
   
           <div className="mt-6 space-y-4">
-            <div className="flex justify-center space-x-8">
+            <div className="flex justify-center space-x-2">
               <Button 
                 variant="outline" 
                 onClick={handlePreviousQuestion} 
